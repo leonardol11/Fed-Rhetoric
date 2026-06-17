@@ -1,0 +1,6 @@
+requests
+beautifulsoup4
+flask
+# Optional ML dependencies:
+# transformers
+# torch

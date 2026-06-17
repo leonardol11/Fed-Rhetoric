@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FOMC Statement Parser</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --serif: "EB Garamond", Garamond, "Times New Roman", Georgia, serif;
+    --sans: -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --navy: #16233f;
+    --ink: #1c1c1c;
+    --muted: #6b6b6b;
+    --border: #d8d4cc;
+    --paper: #fbfaf7;
+    --panel: #ffffff;
+    --hawk: #8c1f1f;
+    --dove: #1f5c3f;
+    --gold: #a98e54;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: var(--serif);
+    color: var(--ink);
+    background: var(--paper);
+    max-width: 900px;
+    margin: 48px auto 80px;
+    padding: 0 24px;
+    line-height: 1.5;
+  }
+  header.masthead {
+    text-align: center;
+    border-bottom: 2px solid var(--navy);
+    padding-bottom: 16px;
+    margin-bottom: 28px;
+  }
+  header.masthead .firm-name {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: var(--navy);
+  }
+  header.masthead .tagline {
+    font-style: italic;
+    color: var(--muted);
+    font-size: 14px;
+    margin-top: 4px;
+  }
+  form.controls {
+    font-family: var(--sans);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 32px;
+  }
+  form.controls label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  select {
+    font-family: var(--sans);
+    flex: 1;
+    font-size: 14px;
+    padding: 9px 10px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    background: var(--panel);
+    color: var(--ink);
+  }
+  .run-btn {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    padding: 10px 18px;
+    border-radius: 3px;
+    border: 1px solid var(--navy);
+    background: var(--navy);
+    color: #fff;
+    cursor: pointer;
+  }
+  .run-btn:hover { background: #1f3258; }
+  .quick-link {
+    font-family: var(--sans);
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+    text-decoration: none;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 1px;
+  }
+  .quick-link:hover { color: var(--navy); border-bottom-color: var(--navy); }
+
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(320px, 400px) 280px;
+    gap: 24px;
+    align-items: stretch;
+    justify-content: center;
+  }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--navy);
+    padding: 18px 20px;
+    height: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+  }
+  #report-body { flex: 1; }
+  .meeting-date {
+    font-family: var(--sans);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .verdict {
+    font-size: 30px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    margin-bottom: 4px;
+  }
+  .verdict.hawkish { color: var(--hawk); }
+  .verdict.dovish { color: var(--dove); }
+  .verdict.neutral { color: var(--ink); }
+  .score-line {
+    font-family: var(--sans);
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+  .shift-banner {
+    font-size: 13px;
+    font-weight: 600;
+    padding: 9px 12px;
+    border-left: 3px solid var(--gold);
+    background: #f7f4ec;
+    margin-bottom: 14px;
+  }
+  .shift-banner.divergent {
+    border-left-color: var(--hawk);
+  }
+  table.detail {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-bottom: 14px;
+  }
+  table.detail td {
+    padding: 5px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  table.detail td:first-child {
+    font-family: var(--sans);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--muted);
+    width: 38%;
+    text-align: right;
+  }
+  table.detail td:last-child {
+    text-align: left;
+    padding-left: 14px;
+  }
+  .terms {
+    font-family: var(--sans);
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .terms .term {
+    display: inline-block;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 2px 6px;
+    margin: 2px 3px 2px 0;
+  }
+  .error, .placeholder {
+    font-size: 14px;
+    color: var(--muted);
+    padding: 8px 0;
+  }
+  .actions {
+    font-family: var(--sans);
+    margin-top: auto;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+  }
+  button, .source-link {
+    font-family: var(--sans);
+    font-size: 12px;
+    padding: 8px 14px;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    cursor: pointer;
+    text-decoration: none;
+    color: var(--ink);
+  }
+
+  .legend-panel {
+    position: sticky;
+    top: 24px;
+    height: 100%;
+    box-sizing: border-box;
+  }
+  .legend-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--gold);
+    padding: 20px;
+    height: 100%;
+    box-sizing: border-box;
+    text-align: center;
+  }
+  .legend-card h2 {
+    font-family: var(--sans);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+    margin: 0 0 14px;
+    font-weight: 600;
+  }
+  .legend-row {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .legend-row:last-child { border-bottom: none; }
+  .legend-row .range {
+    font-family: var(--sans);
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .legend-row .name {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 2px 0 3px;
+  }
+  .legend-row .impact {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.35;
+  }
+  .legend-row.current {
+    background: #f7f4ec;
+    margin: 0 -20px;
+    padding: 10px 20px;
+    border-left: 3px solid var(--gold);
+  }
+  .legend-row.current .name { color: var(--navy); }
+
+  @media (max-width: 700px) {
+    .layout { grid-template-columns: 1fr; }
+    .legend-panel { position: static; }
+  }
+  @media print {
+    form.controls, .actions { display: none; }
+    body { margin: 0; max-width: none; background: #fff; }
+    .layout { grid-template-columns: 1fr 240px; }
+    .card, .legend-card { border: 1px solid #999; }
+  }
+</style>
+</head>
+<body>
+  <header class="masthead">
+    <div class="firm-name">FOMC STATEMENT PARSER</div>
+    <div class="tagline">Federal Reserve Statement Sentiment &amp; Rate-Path Analysis</div>
+  </header>
+
+  <form class="controls" method="get" action="/">
+    <label for="meeting-select">FOMC Meeting</label>
+    <select id="meeting-select" name="meeting">
+      {% for m in dropdown %}
+      <option value="{{ m.date }}" data-url="{{ m.url }}" {{ "selected" if m.selected else "" }}>{{ m.label }}</option>
+      {% endfor %}
+    </select>
+    <button class="run-btn" type="submit">Run Report</button>
+    <a id="quick-link" class="quick-link" href="{{ url }}" target="_blank" rel="noopener">Statement &#8599;</a>
+  </form>
+
+  <div class="layout">
+    <section class="report-panel">
+      <div class="card">
+        <div class="meeting-date" id="meeting-date-label">{{ (selected_label + " &middot; FOMC Statement")|safe if ran else "" }}</div>
+
+        <div id="report-body">
+        {% if not ran %}
+          <div class="placeholder">Select a meeting above and click <strong>Run Report</strong> to see the hawkish/dovish read.</div>
+        {% elif error %}
+          <div class="error">{{ error }}</div>
+        {% else %}
+          <div class="verdict {{ result.label|lower }}">{{ result.label|upper }}</div>
+          <div class="score-line">Net score {{ "%+.3f"|format(result.score) }} &middot; hawkish weight {{ result.hawk }} &middot; dovish weight {{ result.dove }}</div>
+
+          {% if shift %}
+            <div class="shift-banner {{ "divergent" if shift.divergent else "" }}">
+              {{ shift.shift_label }} vs {{ shift.prior_label_date }}
+              ({{ "%+.3f"|format(shift.delta) }})
+              {% if shift.divergent %} &mdash; tone diverges from level{% endif %}
+            </div>
+          {% endif %}
+
+          <table class="detail">
+            <tr><td>Meeting</td><td>{{ selected_label }}</td></tr>
+            <tr><td>Verdict</td><td>{{ result.label }}</td></tr>
+            <tr><td>Net score</td><td>{{ "%+.3f"|format(result.score) }}</td></tr>
+            {% if shift %}
+            <tr><td>Prior meeting</td><td>{{ shift.prior_label_date }} ({{ shift.prior_label }}, {{ "%+.3f"|format(shift.prior_score) }})</td></tr>
+            <tr><td>Shift</td><td>{{ shift.shift_label }} ({{ "%+.3f"|format(shift.delta) }})</td></tr>
+            {% endif %}
+          </table>
+
+          {% if result.matched %}
+          <div class="terms">
+            {% for term, side, negated in result.matched[:12] %}
+            <span class="term">{{ term }}{{ " (neg)" if negated else "" }} &middot; {{ side }}</span>
+            {% endfor %}
+          </div>
+          {% endif %}
+        {% endif %}
+        </div>
+
+        {% if ran %}
+        <div class="actions" id="actions">
+          <button type="button" onclick="window.print()">Print</button>
+        </div>
+        {% endif %}
+      </div>
+    </section>
+
+    <aside class="legend-panel">
+      <div class="legend-card">
+        <h2>Score &rarr; Rate Impact</h2>
+        {% for b in bands %}
+        <div class="legend-row {{ "current" if b.current else "" }}">
+          <div class="range">{{ b.range_label }}</div>
+          <div class="name">{{ b.name }}</div>
+          <div class="impact">{{ b.impact }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    document.getElementById('meeting-select').addEventListener('change', function () {
+      document.getElementById('meeting-date-label').textContent = '';
+      document.getElementById('report-body').innerHTML =
+        '<div class="placeholder">Select a meeting above and click <strong>Run Report</strong> to see the hawkish/dovish read.</div>';
+      var actions = document.getElementById('actions');
+      if (actions) actions.remove();
+      document.querySelectorAll('.legend-row.current').forEach(function (el) {
+        el.classList.remove('current');
+      });
+      var selected = this.options[this.selectedIndex];
+      document.getElementById('quick-link').href = selected.getAttribute('data-url');
+    });
+  </script>
+</body>
+</html>
