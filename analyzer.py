@@ -1,14 +1,24 @@
 import re
 from lexicon import HAWKISH, DOVISH
 
-NEGATORS = {"not", "no", "without", "never", "less", "fewer"}
+NEGATORS = {
+    "not", "no", "without", "never", "less", "fewer",
+    # Portuguese (for the BCB/Copom page); harmless elsewhere since these
+    # tokens don't occur in the English statements.
+    "não", "sem", "nem", "menos",
+}
 
 
 def tokenize(text):
     return re.findall(r"\b[\w-]+\b", text.lower())
 
 
-def score_statement(text):
+def score_statement(text, hawkish=None, dovish=None):
+    # Default to the Fed lexicon; callers (e.g. the ECB page) can pass their
+    # own dicts to score against an institution-specific vocabulary.
+    hawkish = HAWKISH if hawkish is None else hawkish
+    dovish = DOVISH if dovish is None else dovish
+
     tokens = tokenize(text)
     hawk, dove = 0.0, 0.0
     matched = []
@@ -17,15 +27,15 @@ def score_statement(text):
         window = tokens[max(0, i - 3):i]
         negated = any(w in NEGATORS for w in window)
 
-        if tok in HAWKISH:
-            weight = HAWKISH[tok]
+        if tok in hawkish:
+            weight = hawkish[tok]
             if negated:
                 dove += weight
             else:
                 hawk += weight
             matched.append((tok, "hawk", negated))
-        elif tok in DOVISH:
-            weight = DOVISH[tok]
+        elif tok in dovish:
+            weight = dovish[tok]
             if negated:
                 hawk += weight
             else:
@@ -61,9 +71,9 @@ def score_statement(text):
 SHIFT_THRESHOLD = 0.08
 
 
-def score_shift(current_text, prior_text):
-    current = score_statement(current_text)
-    prior = score_statement(prior_text)
+def score_shift(current_text, prior_text, hawkish=None, dovish=None):
+    current = score_statement(current_text, hawkish, dovish)
+    prior = score_statement(prior_text, hawkish, dovish)
     delta = round(current["score"] - prior["score"], 3)
 
     if delta > SHIFT_THRESHOLD:

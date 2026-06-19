@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FOMC Statement Parser</title>
+<title>{{ page_title }}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
@@ -27,7 +27,7 @@
     color: var(--ink);
     background: var(--paper);
     max-width: 900px;
-    margin: 48px auto 80px;
+    margin: 18px auto 80px;
     padding: 0 24px;
     line-height: 1.5;
   }
@@ -48,6 +48,28 @@
     color: var(--muted);
     font-size: 14px;
     margin-top: 4px;
+  }
+  nav.bank-switch {
+    font-family: var(--sans);
+    margin-top: 12px;
+    display: flex;
+    justify-content: center;
+    gap: 22px;
+  }
+  nav.bank-switch a {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+    text-decoration: none;
+    padding-bottom: 3px;
+    border-bottom: 2px solid transparent;
+  }
+  nav.bank-switch a:hover { color: var(--navy); }
+  nav.bank-switch a.active {
+    color: var(--navy);
+    font-weight: 600;
+    border-bottom-color: var(--gold);
   }
   form.controls {
     font-family: var(--sans);
@@ -278,12 +300,19 @@
 </head>
 <body>
   <header class="masthead">
-    <div class="firm-name">FOMC STATEMENT PARSER</div>
-    <div class="tagline">Federal Reserve Statement Sentiment &amp; Rate-Path Analysis</div>
+    <div class="firm-name">{{ masthead_title }}</div>
+    <div class="tagline">By Leonardo Liu (UBS Global Markets Summer Analyst)</div>
+    <nav class="bank-switch">
+      <a href="/" class="{{ 'active' if source == 'fed' else '' }}">Federal Reserve</a>
+      <a href="/ecb" class="{{ 'active' if source == 'ecb' else '' }}">ECB</a>
+      <a href="/boe" class="{{ 'active' if source == 'boe' else '' }}">Bank of England</a>
+      <a href="/boj" class="{{ 'active' if source == 'boj' else '' }}">Bank of Japan</a>
+      <a href="/bcb" class="{{ 'active' if source == 'bcb' else '' }}">Brazil (Copom)</a>
+    </nav>
   </header>
 
-  <form class="controls" method="get" action="/">
-    <label for="meeting-select">FOMC Meeting</label>
+  <form class="controls" method="get" action="{{ action }}">
+    <label for="meeting-select">{{ select_label }}</label>
     <select id="meeting-select" name="meeting">
       {% for m in dropdown %}
       <option value="{{ m.date }}" data-url="{{ m.url }}" {{ "selected" if m.selected else "" }}>{{ m.label }}</option>
@@ -296,7 +325,7 @@
   <div class="layout">
     <section class="report-panel">
       <div class="card">
-        <div class="meeting-date" id="meeting-date-label">{{ (selected_label + " &middot; FOMC Statement")|safe if ran else "" }}</div>
+        <div class="meeting-date" id="meeting-date-label">{{ (selected_label + " &middot; " + meeting_noun)|safe if ran else "" }}</div>
 
         <div id="report-body">
         {% if not ran %}
@@ -304,20 +333,20 @@
         {% elif error %}
           <div class="error">{{ error }}</div>
         {% else %}
-          <div class="verdict {{ result.label|lower }}">{{ result.label|upper }}</div>
+          <div class="verdict {{ verdict_class }}">{{ verdict_name|upper }}</div>
           <div class="score-line">Net score {{ "%+.3f"|format(result.score) }} &middot; hawkish weight {{ result.hawk }} &middot; dovish weight {{ result.dove }}</div>
 
           {% if shift %}
             <div class="shift-banner {{ "divergent" if shift.divergent else "" }}">
               {{ shift.shift_label }} vs {{ shift.prior_label_date }}
               ({{ "%+.3f"|format(shift.delta) }})
-              {% if shift.divergent %} &mdash; tone diverges from level{% endif %}
+              {% if shift.divergent %} - tone diverges from level{% endif %}
             </div>
           {% endif %}
 
           <table class="detail">
             <tr><td>Meeting</td><td>{{ selected_label }}</td></tr>
-            <tr><td>Verdict</td><td>{{ result.label }}</td></tr>
+            <tr><td>Verdict</td><td>{{ verdict_name }}</td></tr>
             <tr><td>Net score</td><td>{{ "%+.3f"|format(result.score) }}</td></tr>
             {% if shift %}
             <tr><td>Prior meeting</td><td>{{ shift.prior_label_date }} ({{ shift.prior_label }}, {{ "%+.3f"|format(shift.prior_score) }})</td></tr>
