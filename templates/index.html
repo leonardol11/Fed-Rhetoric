@@ -108,6 +108,47 @@
     cursor: pointer;
   }
   .run-btn:hover { background: #1f3258; }
+  .ai-toggle {
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    padding: 10px 14px;
+    border-radius: 3px;
+    border: 1px solid var(--gold);
+    background: transparent;
+    color: var(--gold);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s, color 0.15s;
+  }
+  .ai-toggle:hover { background: #f5efe0; }
+  .ai-toggle.active {
+    background: var(--gold);
+    color: #fff;
+  }
+  .ai-badge {
+    font-family: var(--sans);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    background: var(--gold);
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 2px;
+    vertical-align: middle;
+    margin-left: 6px;
+  }
+  .ai-reasoning {
+    font-size: 13px;
+    color: var(--muted);
+    font-style: italic;
+    margin-top: 14px;
+    line-height: 1.6;
+    text-align: left;
+    border-left: 3px solid var(--gold);
+    padding-left: 10px;
+  }
   .quick-link {
     font-family: var(--sans);
     font-size: 12px;
@@ -316,11 +357,15 @@
     <label for="meeting-select">{{ select_label }}</label>
     <select id="meeting-select" name="meeting">
       {% for m in dropdown %}
-      <option value="{{ m.date }}" data-url="{{ m.url }}" {{ "selected" if m.selected else "" }}>{{ m.label }}</option>
+      <option value="{{ m.date }}" data-url="{{ m.url or '' }}" {{ "selected" if m.selected else "" }}>{{ m.label }}</option>
       {% endfor %}
     </select>
+    {% if source == 'banxico' %}
+    <input type="hidden" name="mode" id="mode-input" value="{{ mode }}">
+    <button type="button" class="ai-toggle {{ 'active' if mode == 'ai' else '' }}" id="ai-toggle-btn" onclick="toggleAI()">AI</button>
+    {% endif %}
     <button class="run-btn" type="submit">Run Report</button>
-    <a id="quick-link" class="quick-link" href="{{ url }}" target="_blank" rel="noopener">Statement &#8599;</a>
+    <a id="quick-link" class="quick-link" href="{{ url or '#' }}" target="_blank" rel="noopener">Statement &#8599;</a>
   </form>
 
   <div class="layout">
@@ -334,8 +379,12 @@
         {% elif error %}
           <div class="error">{{ error }}</div>
         {% else %}
-          <div class="verdict {{ verdict_class }}">{{ verdict_name|upper }}</div>
+          <div class="verdict {{ verdict_class }}">{{ verdict_name|upper }}{% if mode == 'ai' %}<span class="ai-badge">AI</span>{% endif %}</div>
+          {% if mode == 'ai' %}
+          <div class="score-line">Net score {{ "%+.3f"|format(result.score) }}</div>
+          {% else %}
           <div class="score-line">Net score {{ "%+.3f"|format(result.score) }} &middot; hawkish weight {{ result.hawk }} &middot; dovish weight {{ result.dove }}</div>
+          {% endif %}
 
           {% if shift %}
             <div class="shift-banner {{ "divergent" if shift.divergent else "" }}">
@@ -355,7 +404,9 @@
             {% endif %}
           </table>
 
-          {% if result.matched %}
+          {% if ai_reasoning %}
+          <div class="ai-reasoning">{{ ai_reasoning }}</div>
+          {% elif result.matched %}
           <div class="terms">
             {% for term, side, negated in result.matched[:12] %}
             <span class="term">{{ term }}{{ " (neg)" if negated else "" }} &middot; {{ side }}</span>
@@ -398,8 +449,21 @@
         el.classList.remove('current');
       });
       var selected = this.options[this.selectedIndex];
-      document.getElementById('quick-link').href = selected.getAttribute('data-url');
+      var dataUrl = selected.getAttribute('data-url');
+      document.getElementById('quick-link').href = dataUrl || '#';
     });
+
+    function toggleAI() {
+      var input = document.getElementById('mode-input');
+      var btn = document.getElementById('ai-toggle-btn');
+      if (input.value === 'ai') {
+        input.value = 'lexicon';
+        btn.classList.remove('active');
+      } else {
+        input.value = 'ai';
+        btn.classList.add('active');
+      }
+    }
   </script>
 </body>
 </html>

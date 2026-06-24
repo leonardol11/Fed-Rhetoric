@@ -2,6 +2,9 @@ requests
 beautifulsoup4
 flask
 pypdf
+python-dotenv
+# Banxico AI mode — set GROQ_API_KEY env var to enable
+# groq is called via requests (no extra package needed)
 # Optional ML dependencies:
 # transformers
 # torch

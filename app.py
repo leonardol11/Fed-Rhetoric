@@ -1,9 +1,13 @@
 from datetime import datetime
 
 import requests
+from dotenv import load_dotenv
 from flask import Flask, render_template, request
 
+load_dotenv()
+
 from analyzer import score_statement, score_shift
+from ai_analyzer import ai_score_statement
 from lexicon import (
     ECB_HAWKISH, ECB_DOVISH,
     BOE_HAWKISH, BOE_DOVISH,
@@ -437,9 +441,15 @@ def build_report(source):
         selected_date = cfg["default_date"]
     url = meetings_by_date[selected_date]
 
+    # AI mode is only available for Banxico; ignored for all other sources.
+    mode = request.args.get("mode", "lexicon") if source == "banxico" else "lexicon"
+    if mode not in ("lexicon", "ai"):
+        mode = "lexicon"
+
     error = None
     result = None
     shift = None
+    ai_reasoning = None
 
     if ran:
         if url is None:
@@ -448,19 +458,35 @@ def build_report(source):
             prior = prior_meeting(meetings, selected_date)
             try:
                 text = fetch_and_cache(url, source=cfg["scraper"])
-                result = score_statement(text, cfg["hawkish"], cfg["dovish"])
 
-                if prior:
-                    prior_date, prior_url = prior
-                    try:
-                        prior_text = fetch_and_cache(prior_url, source=cfg["scraper"])
-                        shift = score_shift(text, prior_text, cfg["hawkish"], cfg["dovish"])
-                        shift["prior_label_date"] = label_for(prior_date)
-                        shift["prior_label"], _ = verdict_for_score(shift["prior_score"])
-                    except requests.exceptions.RequestException:
-                        shift = None
+                if mode == "ai":
+                    ai_data = ai_score_statement(text)
+                    result = {
+                        "score": ai_data["score"],
+                        "hawk": None,
+                        "dove": None,
+                        "matched": [],
+                    }
+                    ai_reasoning = ai_data["reasoning"]
+                else:
+                    result = score_statement(text, cfg["hawkish"], cfg["dovish"])
+
+                    if prior:
+                        prior_date, prior_url = prior
+                        try:
+                            prior_text = fetch_and_cache(prior_url, source=cfg["scraper"])
+                            shift = score_shift(text, prior_text, cfg["hawkish"], cfg["dovish"])
+                            shift["prior_label_date"] = label_for(prior_date)
+                            shift["prior_label"], _ = verdict_for_score(shift["prior_score"])
+                        except requests.exceptions.RequestException:
+                            shift = None
+
             except requests.exceptions.RequestException:
                 error = "This statement isn't published yet. Check back after the meeting concludes."
+            except RuntimeError as exc:
+                error = str(exc)
+            except Exception:
+                error = "AI analysis failed. Check that your GROQ_API_KEY is set and try again."
 
     dropdown = [
         {"date": d, "label": label_for(d), "url": u, "selected": d == selected_date}
@@ -489,6 +515,8 @@ def build_report(source):
         ran=ran,
         verdict_name=verdict_name,
         verdict_class=verdict_class,
+        mode=mode,
+        ai_reasoning=ai_reasoning,
     )
 
 
