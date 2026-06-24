@@ -56,6 +56,18 @@ def _extract_bcb(resp):
     return BeautifulSoup(html, "html.parser").get_text(" ", strip=True)
 
 
+def _extract_banxico(resp):
+    # Banxico publishes Junta de Gobierno statements as PDFs (Spanish). Same
+    # pypdf approach as BoJ; imported lazily since bundled .txt cache is used
+    # in production.
+    import io
+    from pypdf import PdfReader
+
+    reader = PdfReader(io.BytesIO(resp.content))
+    text = " ".join((page.extract_text() or "") for page in reader.pages)
+    return " ".join(text.split())
+
+
 # Each source has its own cache subdirectory (so slugs never collide) and its
 # own extractor (the sites all use different markup / formats).
 SOURCES = {
@@ -64,6 +76,7 @@ SOURCES = {
     "boe": {"subdir": "statements_boe", "extractor": _extract_boe},
     "boj": {"subdir": "statements_boj", "extractor": _extract_boj},
     "bcb": {"subdir": "statements_bcb", "extractor": _extract_bcb},
+    "banxico": {"subdir": "statements_banxico", "extractor": _extract_banxico},
 }
 
 

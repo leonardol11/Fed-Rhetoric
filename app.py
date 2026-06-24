@@ -9,6 +9,7 @@ from lexicon import (
     BOE_HAWKISH, BOE_DOVISH,
     BOJ_HAWKISH, BOJ_DOVISH,
     BCB_HAWKISH, BCB_DOVISH,
+    BANXICO_HAWKISH, BANXICO_DOVISH,
 )
 from scraper import fetch_and_cache
 
@@ -236,6 +237,52 @@ BCB_MEETINGS = [
 BCB_MEETINGS_BY_DATE = {date: url for date, url in BCB_MEETINGS}
 BCB_DEFAULT_DATE = BCB_MEETINGS[-1][0]
 
+# Banco de México (Banxico) Junta de Gobierno meetings. Statements are published
+# as PDFs with opaque GUIDs scraped from the Banxico website. The June 26, 2026
+# meeting is listed as a scheduled date with no URL yet; the report page will
+# show "not published yet" if the user selects it before the PDF goes live.
+BANXICO_MEETINGS = sorted([
+    ("2022-02-10", "https://www.banxico.org.mx/publicaciones-y-prensa/anuncios-de-las-decisiones-de-politica-monetaria/{33C58779-7EFB-ACB7-4BC0-9B7F2444DE1D}.pdf"),
+    ("2022-03-24", "https://www.banxico.org.mx/publicaciones-y-prensa/anuncios-de-las-decisiones-de-politica-monetaria/{B8C1E3A6-4106-7F67-1C3A-904D48D86D0F}.pdf"),
+    ("2022-05-12", "https://www.banxico.org.mx/publicaciones-y-prensa/anuncios-de-las-decisiones-de-politica-monetaria/{45C4A1AE-E137-13A2-3F3E-5EF91735993F}.pdf"),
+    ("2022-06-23", "https://www.banxico.org.mx/publicaciones-y-prensa/anuncios-de-las-decisiones-de-politica-monetaria/{CACDD0D6-B5C5-C4F8-65A6-C79D36A1981D}.pdf"),
+    ("2022-08-11", "https://www.banxico.org.mx/publicaciones-y-prensa/anuncios-de-las-decisiones-de-politica-monetaria/{2B8A2320-5BA7-3B8E-70D2-8AC80C34C074}.pdf"),
+    ("2022-09-29", "https://www.banxico.org.mx/publicaciones-y-prensa/anuncios-de-las-decisiones-de-politica-monetaria/{E6A0E26E-D9C0-97D7-64B7-7F2BF274178E}.pdf"),
+    ("2022-11-10", "https://www.banxico.org.mx/publicaciones-y-prensa/anuncios-de-las-decisiones-de-politica-monetaria/{B66AB8E7-4C51-B5BB-4463-335449EC1006}.pdf"),
+    ("2022-12-15", "https://www.banxico.org.mx/publicaciones-y-prensa/anuncios-de-las-decisiones-de-politica-monetaria/{83B088FF-1923-A73F-2914-0087A31FE25A}.pdf"),
+    ("2023-02-09", "https://www.banxico.org.mx/publicaciones-y-prensa/anuncios-de-las-decisiones-de-politica-monetaria/{C38BE1D9-20AB-7D0D-C010-ED242852AF04}.pdf"),
+    ("2023-03-30", "https://www.banxico.org.mx/publicaciones-y-prensa/anuncios-de-las-decisiones-de-politica-monetaria/{B5CDF10E-D32B-9E92-3E8E-13BB22940D60}.pdf"),
+    ("2023-05-18", "https://www.banxico.org.mx/publicaciones-y-prensa/anuncios-de-las-decisiones-de-politica-monetaria/{325F9D3D-8C6B-8F20-4811-1069701DB7F1}.pdf"),
+    ("2023-06-22", "https://www.banxico.org.mx/publicaciones-y-prensa/anuncios-de-las-decisiones-de-politica-monetaria/{E24CCCC4-3EBC-F5B1-29FE-4595201C5876}.pdf"),
+    ("2023-08-10", "https://www.banxico.org.mx/publicaciones-y-prensa/anuncios-de-las-decisiones-de-politica-monetaria/{3E88ECF2-3506-EF3D-FAC3-63E615972207}.pdf"),
+    ("2023-09-28", "https://www.banxico.org.mx/publicaciones-y-prensa/anuncios-de-las-decisiones-de-politica-monetaria/{068D6FE9-39EE-C58D-9E79-5B3A3919B796}.pdf"),
+    ("2023-11-09", "https://www.banxico.org.mx/publicaciones-y-prensa/anuncios-de-las-decisiones-de-politica-monetaria/{5958E1D4-163A-6987-C87C-8228F89BDEB2}.pdf"),
+    ("2023-12-14", "https://www.banxico.org.mx/publicaciones-y-prensa/anuncios-de-las-decisiones-de-politica-monetaria/{C2B3629A-5738-402A-7D09-9893825E63AC}.pdf"),
+    ("2024-02-08", "https://www.banxico.org.mx/publicaciones-y-prensa/anuncios-de-las-decisiones-de-politica-monetaria/{A060DBDE-00DF-1C4E-7689-CABF9211E20A}.pdf"),
+    ("2024-03-21", "https://www.banxico.org.mx/publicaciones-y-prensa/anuncios-de-las-decisiones-de-politica-monetaria/{B2A2C412-1309-2476-F333-F223A96EA033}.pdf"),
+    ("2024-05-09", "https://www.banxico.org.mx/publicaciones-y-prensa/anuncios-de-las-decisiones-de-politica-monetaria/{44CE87DF-ED9F-58D3-406B-BD6F940A6651}.pdf"),
+    ("2024-06-27", "https://www.banxico.org.mx/publicaciones-y-prensa/anuncios-de-las-decisiones-de-politica-monetaria/{17EF4998-D892-3D29-B613-68BEF3D80B21}.pdf"),
+    ("2024-08-08", "https://www.banxico.org.mx/publicaciones-y-prensa/anuncios-de-las-decisiones-de-politica-monetaria/{2A30082F-C525-8B90-3E75-E54AF31A21EF}.pdf"),
+    ("2024-09-26", "https://www.banxico.org.mx/publicaciones-y-prensa/anuncios-de-las-decisiones-de-politica-monetaria/{F6792ED1-A4C0-564D-19F1-F53F50D82B95}.pdf"),
+    ("2024-11-14", "https://www.banxico.org.mx/publicaciones-y-prensa/anuncios-de-las-decisiones-de-politica-monetaria/{134BAFB3-3FAF-34A6-E510-22D771F7BA70}.pdf"),
+    ("2024-12-19", "https://www.banxico.org.mx/publicaciones-y-prensa/anuncios-de-las-decisiones-de-politica-monetaria/{939FDDA6-702A-F315-37B0-4E422044D13E}.pdf"),
+    ("2025-02-06", "https://www.banxico.org.mx/publicaciones-y-prensa/anuncios-de-las-decisiones-de-politica-monetaria/{8F4D3113-637F-2920-42DE-6A5866416A4F}.pdf"),
+    ("2025-03-27", "https://www.banxico.org.mx/publicaciones-y-prensa/anuncios-de-las-decisiones-de-politica-monetaria/{9842071D-B7B0-B46C-D052-117072FFFC84}.pdf"),
+    ("2025-05-15", "https://www.banxico.org.mx/publicaciones-y-prensa/anuncios-de-las-decisiones-de-politica-monetaria/{FE43A06F-5ECA-8C1D-3E51-DCD1C8657282}.pdf"),
+    ("2025-06-26", "https://www.banxico.org.mx/publicaciones-y-prensa/anuncios-de-las-decisiones-de-politica-monetaria/{7774AEE4-AF2E-9A74-A34C-EDB53F483361}.pdf"),
+    ("2025-08-07", "https://www.banxico.org.mx/publicaciones-y-prensa/anuncios-de-las-decisiones-de-politica-monetaria/{2C71C5A0-BAB3-8C65-D666-AB9B5D82557E}.pdf"),
+    ("2025-09-25", "https://www.banxico.org.mx/publicaciones-y-prensa/anuncios-de-las-decisiones-de-politica-monetaria/{013E2D79-2677-5E71-FA22-DD8825AA7C45}.pdf"),
+    ("2025-11-06", "https://www.banxico.org.mx/publicaciones-y-prensa/anuncios-de-las-decisiones-de-politica-monetaria/{EBE40A87-D410-9D84-25A1-935964853DED}.pdf"),
+    ("2025-12-18", "https://www.banxico.org.mx/publicaciones-y-prensa/anuncios-de-las-decisiones-de-politica-monetaria/{7EC38EB9-5F4D-5857-805D-2471209BFEBA}.pdf"),
+    ("2026-02-05", "https://www.banxico.org.mx/publicaciones-y-prensa/anuncios-de-las-decisiones-de-politica-monetaria/{318D71D0-F37D-869C-E8B4-8E58FD9D3648}.pdf"),
+    ("2026-03-26", "https://www.banxico.org.mx/publicaciones-y-prensa/anuncios-de-las-decisiones-de-politica-monetaria/{44EB2DF8-E71A-1553-7322-F60A34382EBA}.pdf"),
+    ("2026-05-07", "https://www.banxico.org.mx/publicaciones-y-prensa/anuncios-de-las-decisiones-de-politica-monetaria/{8A05C722-0A97-4527-2166-0CE802CE6838}.pdf"),
+    # Scheduled; PDF not yet published — will show "not published yet" until live.
+    ("2026-06-26", None),
+])
+BANXICO_MEETINGS_BY_DATE = {date: url for date, url in BANXICO_MEETINGS}
+BANXICO_DEFAULT_DATE = "2026-05-07"
+
 # Score bands and what they typically mean for the rate path.
 # The neutral zone is intentionally narrow (+-0.02) so "Neutral" only fires on
 # statements that are genuinely near-zero net tone, rather than swallowing
@@ -360,6 +407,19 @@ SOURCE_CONFIG = {
         "meeting_noun": "Copom Statement (Portuguese source)",
         "action": "/bcb",
     },
+    "banxico": {
+        "scraper": "banxico",
+        "meetings": BANXICO_MEETINGS,
+        "meetings_by_date": BANXICO_MEETINGS_BY_DATE,
+        "default_date": BANXICO_DEFAULT_DATE,
+        "hawkish": BANXICO_HAWKISH,
+        "dovish": BANXICO_DOVISH,
+        "page_title": "Banxico Statement Parser",
+        "masthead_title": "BANCO DE MÉXICO PARSER",
+        "select_label": "Banxico Meeting",
+        "meeting_noun": "Banxico Junta de Gobierno Statement",
+        "action": "/banxico",
+    },
 }
 
 
@@ -382,22 +442,25 @@ def build_report(source):
     shift = None
 
     if ran:
-        prior = prior_meeting(meetings, selected_date)
-        try:
-            text = fetch_and_cache(url, source=cfg["scraper"])
-            result = score_statement(text, cfg["hawkish"], cfg["dovish"])
-
-            if prior:
-                prior_date, prior_url = prior
-                try:
-                    prior_text = fetch_and_cache(prior_url, source=cfg["scraper"])
-                    shift = score_shift(text, prior_text, cfg["hawkish"], cfg["dovish"])
-                    shift["prior_label_date"] = label_for(prior_date)
-                    shift["prior_label"], _ = verdict_for_score(shift["prior_score"])
-                except requests.exceptions.RequestException:
-                    shift = None
-        except requests.exceptions.RequestException:
+        if url is None:
             error = "This statement isn't published yet. Check back after the meeting concludes."
+        else:
+            prior = prior_meeting(meetings, selected_date)
+            try:
+                text = fetch_and_cache(url, source=cfg["scraper"])
+                result = score_statement(text, cfg["hawkish"], cfg["dovish"])
+
+                if prior:
+                    prior_date, prior_url = prior
+                    try:
+                        prior_text = fetch_and_cache(prior_url, source=cfg["scraper"])
+                        shift = score_shift(text, prior_text, cfg["hawkish"], cfg["dovish"])
+                        shift["prior_label_date"] = label_for(prior_date)
+                        shift["prior_label"], _ = verdict_for_score(shift["prior_score"])
+                    except requests.exceptions.RequestException:
+                        shift = None
+            except requests.exceptions.RequestException:
+                error = "This statement isn't published yet. Check back after the meeting concludes."
 
     dropdown = [
         {"date": d, "label": label_for(d), "url": u, "selected": d == selected_date}
@@ -452,6 +515,11 @@ def boj():
 @app.route("/bcb")
 def bcb():
     return build_report("bcb")
+
+
+@app.route("/banxico")
+def banxico():
+    return build_report("banxico")
 
 
 if __name__ == "__main__":

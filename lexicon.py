@@ -92,3 +92,32 @@ BCB_DOVISH = {
     "alívio": 1.0, "convergência": 0.7, "desinflação": 1.2,
     "enfraquecimento": 1.0,
 }
+
+# Banco de México (Banxico) Junta de Gobierno statements. Published in Spanish
+# as PDFs; scored directly against a Spanish lexicon (no translation). Banxico
+# vocabulary centers on the tasa objetivo (overnight target rate), inflation
+# convergence to the 3% target, and balance-of-risks language.
+BANXICO_HAWKISH = {
+    # Strong rate-direction signals
+    "elevar": 1.3, "elevación": 1.1, "aumentar": 1.1, "aumento": 0.9,
+    "incrementar": 1.0, "incremento": 0.9,
+    "apretamiento": 1.3, "restrictiva": 1.4, "restrictivo": 1.4,
+    "restricción": 1.1,
+    # Inflation / risk language
+    "presiones": 0.8, "persistente": 1.1, "persistencia": 1.1,
+    "desanclaje": 1.2, "deterioro": 0.9,
+    # Stance descriptors
+    "vigilancia": 1.0, "firme": 0.8, "alza": 0.9,
+}
+
+BANXICO_DOVISH = {
+    # Strong rate-direction signals
+    "reducir": 1.2, "reducción": 1.2, "recorte": 1.3,
+    "disminuir": 1.1, "disminución": 1.0, "bajar": 1.0, "baja": 0.8,
+    # Easing / accommodation language
+    "relajamiento": 1.3, "flexibilización": 1.2, "acomodaticia": 1.3,
+    "acomodativo": 1.3, "estímulo": 1.1,
+    # Inflation convergence / cooling signals
+    "desaceleración": 1.0, "convergencia": 0.8, "moderación": 0.8,
+    "holgura": 0.9, "debilitamiento": 1.0, "desinflación": 1.1,
+}
