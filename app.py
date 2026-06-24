@@ -9,8 +9,10 @@ from lexicon import (
     BOE_HAWKISH, BOE_DOVISH,
     BOJ_HAWKISH, BOJ_DOVISH,
     BCB_HAWKISH, BCB_DOVISH,
+    BANXICO_HAWKISH, BANXICO_DOVISH,
 )
 from scraper import fetch_and_cache
+import groq_client
 
 app = Flask(__name__)
 
@@ -236,6 +238,57 @@ BCB_MEETINGS = [
 BCB_MEETINGS_BY_DATE = {date: url for date, url in BCB_MEETINGS}
 BCB_DEFAULT_DATE = BCB_MEETINGS[-1][0]
 
+# Banco de México (Banxico). Banxico publishes the official English translation
+# of each "Monetary Policy Statement" as a PDF whose URL carries an opaque GUID
+# (like the ECB), so the full URL is stored alongside the decision date. The
+# text is English, scored with a shared-English + Banxico-specific lexicon.
+BANXICO_MEETINGS = [
+    ("2022-02-10", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{8C41C206-FFD7-D2F1-53C1-F99B49828E42}.pdf"),
+    ("2022-03-24", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{51CBBC0C-AD76-1B7F-A8F4-1E4D31261BE7}.pdf"),
+    ("2022-05-12", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{D2DD420D-FEEB-C682-3621-46B2AC0CA13E}.pdf"),
+    ("2022-06-23", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{418A3848-5F56-AADC-72B6-2D5D6ACD953B}.pdf"),
+    ("2022-08-11", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{96D51354-49EC-881E-A105-DB13882FBE95}.pdf"),
+    ("2022-09-29", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{5D6CCFE7-FBBC-A653-1AAF-FFFE47A1C4E0}.pdf"),
+    ("2022-11-10", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{FD5B6E4F-810F-2615-EAD3-6A38FBD3719E}.pdf"),
+    ("2022-12-15", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{ACF4298D-BFF0-56B9-5204-535809945352}.pdf"),
+    ("2023-02-09", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{980D7F0D-1BD9-0271-AC09-B5E5CFD2F0EE}.pdf"),
+    ("2023-03-30", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{6582F82C-C62B-A222-FA76-48CA213C40B8}.pdf"),
+    ("2023-05-18", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{C1859402-0578-833E-22FA-BAD52FD4E302}.pdf"),
+    ("2023-06-22", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{BE9A474F-C31A-105C-704C-F0D83F946952}.pdf"),
+    ("2023-08-10", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{7D376C26-0D56-D9D9-88BC-36872FDE3877}.pdf"),
+    ("2023-09-28", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{103B82DD-7EF3-67E5-D464-C427CA71A8C9}.pdf"),
+    ("2023-11-09", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{0C72F586-D049-4DA0-ADE7-51191732D2E8}.pdf"),
+    ("2023-12-14", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{361D29D6-2C10-6BD0-90E5-CC20E37740AD}.pdf"),
+    ("2024-02-08", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{C7575A2B-9433-177D-F705-9EFB60DFECB0}.pdf"),
+    ("2024-03-21", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{37E09D62-344B-CB2E-178A-3DFD89B45FAB}.pdf"),
+    ("2024-05-09", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{82CC4453-9FB7-62E3-F382-B9A706E687EB}.pdf"),
+    ("2024-06-27", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{4819AE22-2A5A-47A0-AB73-3844E55FC103}.pdf"),
+    ("2024-08-08", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{C54982F1-0AE2-4D4E-7B01-782B71B833A0}.pdf"),
+    ("2024-09-26", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{12F00F7D-9500-4783-8D4C-BD70CEFC3CB0}.pdf"),
+    ("2024-11-14", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{CB65DD59-972C-33CB-405C-13329FF4C1B3}.pdf"),
+    ("2024-12-19", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{D6C36379-9883-1D2C-4044-C1C95D826472}.pdf"),
+    ("2025-02-06", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{2A312FE9-46E2-ECA2-18CA-E41525914605}.pdf"),
+    ("2025-03-27", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{AAA950F8-AC4D-BB42-4373-67F1F76688BF}.pdf"),
+    ("2025-05-15", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{05A3168F-9270-E2AC-5447-997D3260FCD6}.pdf"),
+    ("2025-06-26", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{1E6C2F60-BAB9-9AE4-8D86-E933A9F7053F}.pdf"),
+    ("2025-08-07", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{6DD1297B-DDAB-EB9D-16B7-274E45A4547A}.pdf"),
+    ("2025-09-25", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{AB9F839E-1F94-B888-699F-9CEE8291C3D0}.pdf"),
+    ("2025-11-06", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{80D0AFF9-2BD6-F24D-889E-7DB5C462A13C}.pdf"),
+    ("2025-12-18", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{7DCCD7FD-3BCF-CB35-FD10-B2E19859980F}.pdf"),
+    ("2026-02-05", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{A09BC2E1-83D7-6E38-2C95-1E9D6B4D3D5F}.pdf"),
+    ("2026-03-26", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{0C0B38DB-88E4-DBA0-F925-550450052746}.pdf"),
+    ("2026-05-07", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{CA5BAB07-D1DB-8A20-747A-642EB163A599}.pdf"),
+    # Scheduled but not yet held: an empty URL marks the statement as unreleased,
+    # so the app shows a clear "not released yet" notice instead of attempting a
+    # fetch. Fill in the real PDF URL (from fetch_banxico.py) once it's published.
+    ("2026-06-26", ""),
+]
+BANXICO_MEETINGS_BY_DATE = {date: url for date, url in BANXICO_MEETINGS}
+# Default to the most recent meeting on the calendar, even if it's still
+# scheduled/unreleased (e.g. June 26, 2026): a fresh load lands on the latest
+# date, and running it surfaces the "not released yet" notice until it's out.
+BANXICO_DEFAULT_DATE = BANXICO_MEETINGS[-1][0]
+
 # Score bands and what they typically mean for the rate path.
 # The neutral zone is intentionally narrow (+-0.02) so "Neutral" only fires on
 # statements that are genuinely near-zero net tone, rather than swallowing
@@ -265,18 +318,24 @@ def rate_impact_bands(score=None):
     return bands
 
 
+def css_class_for_label(name):
+    """Map a verdict label (e.g. "Strongly Dovish") to its display color class.
+    Shared by the lexicon verdict and Grok's verdict so both color the same way."""
+    if not name:
+        return "neutral"
+    if "Hawkish" in name:
+        return "hawkish"
+    if "Dovish" in name:
+        return "dovish"
+    return "neutral"
+
+
 def verdict_for_score(score):
     """Map a score to the same band the rate-impact legend highlights, so the
     verdict shown in the report always matches the highlighted legend row."""
     band = next(b for b in rate_impact_bands(score) if b["current"])
     name = band["name"]
-    if "Hawkish" in name:
-        css_class = "hawkish"
-    elif "Dovish" in name:
-        css_class = "dovish"
-    else:
-        css_class = "neutral"
-    return name, css_class
+    return name, css_class_for_label(name)
 
 
 def label_for(date_str):
@@ -302,6 +361,7 @@ SOURCE_CONFIG = {
         "default_date": DEFAULT_DATE,
         "hawkish": None,
         "dovish": None,
+        "bank_name": "U.S. Federal Reserve (FOMC)",
         "page_title": "FOMC Statement Parser",
         "masthead_title": "FOMC STATEMENT PARSER",
         "select_label": "FOMC Meeting",
@@ -315,6 +375,7 @@ SOURCE_CONFIG = {
         "default_date": ECB_DEFAULT_DATE,
         "hawkish": ECB_HAWKISH,
         "dovish": ECB_DOVISH,
+        "bank_name": "European Central Bank",
         "page_title": "ECB Statement Parser",
         "masthead_title": "ECB STATEMENT PARSER",
         "select_label": "ECB Meeting",
@@ -328,6 +389,7 @@ SOURCE_CONFIG = {
         "default_date": BOE_DEFAULT_DATE,
         "hawkish": BOE_HAWKISH,
         "dovish": BOE_DOVISH,
+        "bank_name": "Bank of England (MPC)",
         "page_title": "BoE Statement Parser",
         "masthead_title": "BANK OF ENGLAND PARSER",
         "select_label": "BoE Meeting",
@@ -341,6 +403,7 @@ SOURCE_CONFIG = {
         "default_date": BOJ_DEFAULT_DATE,
         "hawkish": BOJ_HAWKISH,
         "dovish": BOJ_DOVISH,
+        "bank_name": "Bank of Japan",
         "page_title": "BoJ Statement Parser",
         "masthead_title": "BANK OF JAPAN PARSER",
         "select_label": "BoJ Meeting",
@@ -354,11 +417,26 @@ SOURCE_CONFIG = {
         "default_date": BCB_DEFAULT_DATE,
         "hawkish": BCB_HAWKISH,
         "dovish": BCB_DOVISH,
+        "bank_name": "Banco Central do Brasil (Copom)",
         "page_title": "Copom Statement Parser",
         "masthead_title": "BANCO CENTRAL DO BRASIL PARSER",
         "select_label": "Copom Meeting",
         "meeting_noun": "Copom Statement (Portuguese source)",
         "action": "/bcb",
+    },
+    "banxico": {
+        "scraper": "banxico",
+        "meetings": BANXICO_MEETINGS,
+        "meetings_by_date": BANXICO_MEETINGS_BY_DATE,
+        "default_date": BANXICO_DEFAULT_DATE,
+        "hawkish": BANXICO_HAWKISH,
+        "dovish": BANXICO_DOVISH,
+        "bank_name": "Banco de México (Banxico)",
+        "page_title": "Banxico Statement Parser",
+        "masthead_title": "BANCO DE MÉXICO PARSER",
+        "select_label": "Banxico Meeting",
+        "meeting_noun": "Banxico Monetary Policy Statement",
+        "action": "/banxico",
     },
 }
 
@@ -372,16 +450,27 @@ def build_report(source):
     # A bare visit to the page stays clean with nothing analyzed yet.
     ran = "meeting" in request.args
 
+    # AI mode is an opt-in toggle: the Groq read only runs when the user turns it
+    # on, so a normal Run Report stays offline/instant unless AI is requested.
+    ai_on = request.args.get("ai") == "on"
+
     selected_date = request.args.get("meeting", cfg["default_date"])
     if selected_date not in meetings_by_date:
         selected_date = cfg["default_date"]
     url = meetings_by_date[selected_date]
+    # An empty URL marks a scheduled-but-unreleased meeting (e.g. one that hasn't
+    # happened yet), which we surface explicitly rather than trying to fetch.
+    released = bool(url)
 
     error = None
+    unreleased = False
     result = None
     shift = None
+    grok = None
 
-    if ran:
+    if ran and not released:
+        unreleased = True
+    elif ran:
         prior = prior_meeting(meetings, selected_date)
         try:
             text = fetch_and_cache(url, source=cfg["scraper"])
@@ -389,13 +478,28 @@ def build_report(source):
 
             if prior:
                 prior_date, prior_url = prior
-                try:
-                    prior_text = fetch_and_cache(prior_url, source=cfg["scraper"])
-                    shift = score_shift(text, prior_text, cfg["hawkish"], cfg["dovish"])
-                    shift["prior_label_date"] = label_for(prior_date)
-                    shift["prior_label"], _ = verdict_for_score(shift["prior_score"])
-                except requests.exceptions.RequestException:
-                    shift = None
+                # Skip the prior comparison if the prior meeting is unreleased.
+                if prior_url:
+                    try:
+                        prior_text = fetch_and_cache(prior_url, source=cfg["scraper"])
+                        shift = score_shift(text, prior_text, cfg["hawkish"], cfg["dovish"])
+                        shift["prior_label_date"] = label_for(prior_date)
+                        shift["prior_label"], _ = verdict_for_score(shift["prior_score"])
+                    except requests.exceptions.RequestException:
+                        shift = None
+
+            # Independent LLM read from Groq, only when AI mode is toggled on.
+            # Fail-soft: a missing key or a bad response comes back as
+            # available=False and just shows a note, so the lexicon report is
+            # never blocked on the network call.
+            if ai_on:
+                grok = groq_client.analyze_statement(
+                    text,
+                    bank_name=cfg["bank_name"],
+                    meeting_label=label_for(selected_date),
+                    meeting_noun=cfg["meeting_noun"],
+                )
+                grok["css_class"] = css_class_for_label(grok.get("label"))
         except requests.exceptions.RequestException:
             error = "This statement isn't published yet. Check back after the meeting concludes."
 
@@ -404,7 +508,15 @@ def build_report(source):
         for d, u in meetings
     ]
 
-    bands = rate_impact_bands(result["score"] if result else None)
+    # The legend highlights whichever read is on screen: in AI mode it follows
+    # Groq's label (matched by name), otherwise the lexicon's numeric score. This
+    # keeps the two reads fully separate so neither leaks into the other's view.
+    if ai_on and grok and grok.get("label"):
+        bands = rate_impact_bands(None)
+        for b in bands:
+            b["current"] = b["name"] == grok["label"]
+    else:
+        bands = rate_impact_bands(result["score"] if result else None)
     verdict_name, verdict_class = verdict_for_score(result["score"]) if result else (None, None)
 
     return render_template(
@@ -421,6 +533,10 @@ def build_report(source):
         url=url,
         result=result,
         shift=shift,
+        grok=grok,
+        grok_enabled=groq_client.is_configured(),
+        ai_on=ai_on,
+        unreleased=unreleased,
         error=error,
         bands=bands,
         ran=ran,
@@ -452,6 +568,11 @@ def boj():
 @app.route("/bcb")
 def bcb():
     return build_report("bcb")
+
+
+@app.route("/banxico")
+def banxico():
+    return build_report("banxico")
 
 
 if __name__ == "__main__":

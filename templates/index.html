@@ -108,6 +108,45 @@
     cursor: pointer;
   }
   .run-btn:hover { background: #1f3258; }
+  .ai-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+  .ai-toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .ai-track {
+    position: relative;
+    width: 34px;
+    height: 18px;
+    border-radius: 999px;
+    background: #cfcabf;
+    transition: background 0.15s ease;
+    flex: none;
+  }
+  .ai-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    transition: transform 0.15s ease;
+  }
+  .ai-toggle input:checked + .ai-track { background: var(--gold); }
+  .ai-toggle input:checked + .ai-track .ai-thumb { transform: translateX(16px); }
+  .ai-toggle input:focus-visible + .ai-track { box-shadow: 0 0 0 2px rgba(169,142,84,0.4); }
+  .ai-text {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--muted);
+  }
+  .ai-toggle input:checked ~ .ai-text { color: var(--navy); font-weight: 600; }
   .quick-link {
     font-family: var(--sans);
     font-size: 12px;
@@ -213,6 +252,85 @@
     color: var(--muted);
     padding: 8px 0;
   }
+  .unreleased { padding: 8px 0; }
+  .unreleased-tag {
+    font-family: var(--sans);
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    color: var(--hawk);
+    border: 1px solid var(--hawk);
+    border-radius: 3px;
+    padding: 3px 8px;
+    display: inline-block;
+    margin-bottom: 10px;
+  }
+  .unreleased p {
+    font-size: 14px;
+    color: var(--muted);
+    margin: 0;
+    line-height: 1.5;
+  }
+  .grok {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--border);
+  }
+  .grok.grok-solo {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+  }
+  .grok-solo .grok-verdict { font-size: 30px; }
+  .grok-head {
+    font-family: var(--sans);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .grok-tag {
+    font-style: italic;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--gold);
+  }
+  .grok-verdict {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+  .grok-verdict.hawkish { color: var(--hawk); }
+  .grok-verdict.dovish { color: var(--dove); }
+  .grok-verdict.neutral { color: var(--ink); }
+  .grok-score {
+    font-family: var(--sans);
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .grok-scale { font-size: 11px; }
+  .grok-summary {
+    font-style: italic;
+    font-size: 14px;
+    color: var(--ink);
+    margin-top: 8px;
+    line-height: 1.4;
+  }
+  .grok-model, .grok-note {
+    font-family: var(--sans);
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+  .grok-note code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    background: #f1efe8;
+    padding: 1px 4px;
+    border-radius: 3px;
+  }
   .actions {
     font-family: var(--sans);
     margin-top: auto;
@@ -308,6 +426,7 @@
       <a href="/boe" class="{{ 'active' if source == 'boe' else '' }}">Bank of England</a>
       <a href="/boj" class="{{ 'active' if source == 'boj' else '' }}">Bank of Japan</a>
       <a href="/bcb" class="{{ 'active' if source == 'bcb' else '' }}">Brazil (Copom)</a>
+      <a href="/banxico" class="{{ 'active' if source == 'banxico' else '' }}">Mexico (Banxico)</a>
     </nav>
   </header>
 
@@ -318,8 +437,13 @@
       <option value="{{ m.date }}" data-url="{{ m.url }}" {{ "selected" if m.selected else "" }}>{{ m.label }}</option>
       {% endfor %}
     </select>
+    <label class="ai-toggle" title="Turn on to add an independent Groq AI read">
+      <input type="checkbox" name="ai" value="on" {{ "checked" if ai_on else "" }}>
+      <span class="ai-track"><span class="ai-thumb"></span></span>
+      <span class="ai-text">AI mode</span>
+    </label>
     <button class="run-btn" type="submit">Run Report</button>
-    <a id="quick-link" class="quick-link" href="{{ url }}" target="_blank" rel="noopener">Statement &#8599;</a>
+    <a id="quick-link" class="quick-link" href="{{ url or '#' }}" target="_blank" rel="noopener" style="visibility: {{ 'visible' if url else 'hidden' }}">Statement &#8599;</a>
   </form>
 
   <div class="layout">
@@ -330,8 +454,29 @@
         <div id="report-body">
         {% if not ran %}
           <div class="placeholder">Select a meeting above and click <strong>Run Report</strong> to see the hawkish/dovish read.</div>
+        {% elif unreleased %}
+          <div class="unreleased">
+            <div class="unreleased-tag">Statement not released</div>
+            <p>The <strong>{{ selected_label }}</strong> {{ meeting_noun }} has not been published yet&mdash;this meeting hasn&rsquo;t concluded. Check back after the decision is announced to run the report.</p>
+          </div>
         {% elif error %}
           <div class="error">{{ error }}</div>
+        {% elif ai_on %}
+          <div class="grok grok-solo">
+            <div class="grok-head">Groq AI Read <span class="grok-tag">LLM second opinion</span></div>
+            {% if grok and grok.available and grok.label %}
+              <div class="grok-verdict {{ grok.css_class }}">{{ grok.label|upper }}</div>
+              {% if grok.score is not none %}
+              <div class="grok-score">AI tone score {{ "%+.2f"|format(grok.score) }} <span class="grok-scale">(&minus;1 dovish &middot; +1 hawkish)</span></div>
+              {% endif %}
+              {% if grok.summary %}<div class="grok-summary">&ldquo;{{ grok.summary }}&rdquo;</div>{% endif %}
+              {% if grok.model %}<div class="grok-model">model: {{ grok.model }}</div>{% endif %}
+            {% elif not grok_enabled %}
+              <div class="grok-note">Set the <code>GROQ_API_KEY</code> environment variable to enable the live Groq read.</div>
+            {% else %}
+              <div class="grok-note">Groq read unavailable{% if grok and grok.error %} &middot; {{ grok.error }}{% endif %}.</div>
+            {% endif %}
+          </div>
         {% else %}
           <div class="verdict {{ verdict_class }}">{{ verdict_name|upper }}</div>
           <div class="score-line">Net score {{ "%+.3f"|format(result.score) }} &middot; hawkish weight {{ result.hawk }} &middot; dovish weight {{ result.dove }}</div>
@@ -397,7 +542,10 @@
         el.classList.remove('current');
       });
       var selected = this.options[this.selectedIndex];
-      document.getElementById('quick-link').href = selected.getAttribute('data-url');
+      var durl = selected.getAttribute('data-url');
+      var ql = document.getElementById('quick-link');
+      ql.href = durl || '#';
+      ql.style.visibility = durl ? 'visible' : 'hidden';
     });
   </script>
 </body>

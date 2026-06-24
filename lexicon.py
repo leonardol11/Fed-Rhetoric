@@ -92,3 +92,23 @@ BCB_DOVISH = {
     "alívio": 1.0, "convergência": 0.7, "desinflação": 1.2,
     "enfraquecimento": 1.0,
 }
+
+# Banco de México (Banxico). Banxico publishes an official English translation
+# of each "Monetary Policy Statement", so (unlike the BCB) we score it with the
+# shared English lexicon plus Banxico-specific phrasing. Their hawkish signal is
+# the language of "monetary restriction" and upside inflation risks; the dovish
+# signal is "rate cuts", "convergence" of inflation to the 3% target, and
+# economic "weakness".
+BANXICO_HAWKISH = {
+    **HAWKISH,
+    "restriction": 1.2, "upward": 0.6, "persistence": 1.0,
+    "complex": 0.4, "deterioration": 0.8, "depreciation": 0.7,
+    "pressures": 0.6, "elevated": 0.6,
+}
+
+BANXICO_DOVISH = {
+    **DOVISH,
+    "easing": 1.2, "convergence": 0.7, "downward": 0.6,
+    "weakness": 0.9, "slack": 0.8, "moderation": 0.6,
+    "decreased": 0.8, "conclude": 0.6,
+}
