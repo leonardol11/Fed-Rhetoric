@@ -98,8 +98,12 @@ def fetch_statement(url, extractor=_extract_fed):
     return extractor(resp)
 
 
-def fetch_and_cache(url, source="fed", cache_dir=None):
-    """Fetch a statement, preferring the bundled cache, then a writable cache."""
+def fetch_and_cache(url, source="fed", cache_dir=None, fresh=False):
+    """Fetch a statement, preferring the bundled cache, then a writable cache.
+
+    Pass fresh=True to skip cache reads and always fetch/parse from the source
+    (used by the web report so each Run Report hits the live statement).
+    """
     cfg = SOURCES[source]
     subdir = cfg["subdir"]
     last = url.rstrip("/").split("/")[-1]
@@ -110,14 +114,16 @@ def fetch_and_cache(url, source="fed", cache_dir=None):
     slug = re.sub(r"[^A-Za-z0-9._-]+", "_", last)
     filename = f"{slug}.txt"
 
-    bundled_path = _bundled_dir(subdir) / filename
-    if bundled_path.exists():
-        return bundled_path.read_text()
-
     write_dir = Path(cache_dir) if cache_dir else _writable_dir(subdir)
     write_path = write_dir / filename
-    if write_path.exists():
-        return write_path.read_text()
+
+    if not fresh:
+        bundled_path = _bundled_dir(subdir) / filename
+        if bundled_path.exists():
+            return bundled_path.read_text()
+
+        if write_path.exists():
+            return write_path.read_text()
 
     text = fetch_statement(url, extractor=cfg["extractor"])
     write_dir.mkdir(parents=True, exist_ok=True)

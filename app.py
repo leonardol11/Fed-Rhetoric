@@ -473,7 +473,7 @@ def build_report(source):
     elif ran:
         prior = prior_meeting(meetings, selected_date)
         try:
-            text = fetch_and_cache(url, source=cfg["scraper"])
+            text = fetch_and_cache(url, source=cfg["scraper"], fresh=True)
             result = score_statement(text, cfg["hawkish"], cfg["dovish"])
 
             if prior:
@@ -481,7 +481,7 @@ def build_report(source):
                 # Skip the prior comparison if the prior meeting is unreleased.
                 if prior_url:
                     try:
-                        prior_text = fetch_and_cache(prior_url, source=cfg["scraper"])
+                        prior_text = fetch_and_cache(prior_url, source=cfg["scraper"], fresh=True)
                         shift = score_shift(text, prior_text, cfg["hawkish"], cfg["dovish"])
                         shift["prior_label_date"] = label_for(prior_date)
                         shift["prior_label"], _ = verdict_for_score(shift["prior_score"])
