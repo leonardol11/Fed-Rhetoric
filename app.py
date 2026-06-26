@@ -479,9 +479,14 @@ def build_report(source):
     # A bare visit to the page stays clean with nothing analyzed yet.
     ran = "meeting" in request.args
 
-    # AI mode is an opt-in toggle: the Groq read only runs when the user turns it
-    # on, so a normal Run Report stays offline/instant unless AI is requested.
-    ai_on = request.args.get("ai") == "on"
+    # AI mode is an opt-in toggle for all banks except Banxico, where it defaults on.
+    if source == "banxico":
+        if "ai_default" in request.args:
+            ai_on = request.args.get("ai") == "on"
+        else:
+            ai_on = True
+    else:
+        ai_on = request.args.get("ai") == "on"
 
     selected_date = request.args.get("meeting", default_meeting_date(meetings))
     if selected_date not in meetings_by_date:

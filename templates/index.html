@@ -437,6 +437,9 @@
       <option value="{{ m.date }}" data-url="{{ m.url }}" {{ "selected" if m.selected else "" }}>{{ m.label }}</option>
       {% endfor %}
     </select>
+    {% if source == 'banxico' %}
+    <input type="hidden" name="ai_default" value="1">
+    {% endif %}
     <label class="ai-toggle" title="Turn on to add an independent Groq AI read">
       <input type="checkbox" name="ai" value="on" {{ "checked" if ai_on else "" }}>
       <span class="ai-track"><span class="ai-thumb"></span></span>
