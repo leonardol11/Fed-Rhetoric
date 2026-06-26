@@ -376,23 +376,13 @@ def prior_meeting(meetings, date_str):
 
 
 def default_meeting_date(meetings, today=None):
-    """Pick the dropdown default: latest released meeting on or before today,
-    otherwise the next scheduled date on the calendar."""
+    """Default dropdown to whichever meeting date is closest to today."""
     if today is None:
         today = datetime.now().date()
-    released_on_or_before = [
-        d for d, url in meetings
-        if url and datetime.strptime(d, "%Y-%m-%d").date() <= today
-    ]
-    if released_on_or_before:
-        return max(released_on_or_before)
-    upcoming = [
-        d for d, _ in meetings
-        if datetime.strptime(d, "%Y-%m-%d").date() >= today
-    ]
-    if upcoming:
-        return min(upcoming)
-    return meetings[-1][0]
+    return min(
+        meetings,
+        key=lambda item: abs((datetime.strptime(item[0], "%Y-%m-%d").date() - today).days),
+    )[0]
 
 
 # Per-source configuration. Everything else (scoring, bands, verdicts, the
