@@ -13,6 +13,8 @@ from scraper import fetch_and_cache
 
 def main():
     for date, url in ECB_MEETINGS:
+        if not url:
+            continue
         try:
             text = fetch_and_cache(url, source="ecb")
             print(f"cached {date}  ({len(text):>5} chars)")

@@ -34,12 +34,18 @@ _MEETING_DATES = [
     "20260128", "20260318", "20260429", "20260617",
 ]
 
+_FED_SCHEDULED = [
+    # 2026 remainder — [FOMC calendar](https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm)
+    ("2026-07-29", ""),
+    ("2026-09-16", ""),
+    ("2026-10-28", ""),
+    ("2026-12-09", ""),
+]
+
 MEETINGS = [
     (f"{d[:4]}-{d[4:6]}-{d[6:]}", f"https://www.federalreserve.gov/newsevents/pressreleases/monetary{d}a.htm")
     for d in _MEETING_DATES
-]
-
-DEFAULT_DATE = "2026-06-17"
+] + _FED_SCHEDULED
 
 MEETINGS_BY_DATE = {date: url for date, url in MEETINGS}
 
@@ -84,6 +90,14 @@ _ECB_URLS = [
     "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.mp260319~3057739775.en.html",
     "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.mp260430~81b7179e6f.en.html",
     "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.mp260611~4d41bd5e83.en.html",
+    # 2026 remainder — [ECB Governing Council calendar](https://www.ecb.europa.eu/press/calendars/mgcgc/html/index.en.html)
+    # URLs unknown until published; empty string shows "not released yet".
+]
+_ECB_SCHEDULED = [
+    ("2026-07-23", ""),
+    ("2026-09-10", ""),
+    ("2026-10-29", ""),
+    ("2026-12-17", ""),
 ]
 
 
@@ -92,14 +106,13 @@ def _ecb_date(url):
     return f"20{slug[:2]}-{slug[2:4]}-{slug[4:6]}"
 
 
-ECB_MEETINGS = sorted((_ecb_date(u), u) for u in _ECB_URLS)
+ECB_MEETINGS = sorted((_ecb_date(u), u) for u in _ECB_URLS) + _ECB_SCHEDULED
 ECB_MEETINGS_BY_DATE = {date: url for date, url in ECB_MEETINGS}
-ECB_DEFAULT_DATE = ECB_MEETINGS[-1][0]
 
 # Bank of England MPC meetings ("Monetary Policy Summary and minutes"). The URL
 # encodes only the month, so the exact decision date (parsed from each page's
 # "Published on" line) is stored explicitly alongside it. Only meetings with a
-# published summary are listed; future scheduled meetings are added once live.
+# published summary are listed; future scheduled meetings use an empty URL until live.
 BOE_MEETINGS = [
     ("2022-02-03", "https://www.bankofengland.co.uk/monetary-policy-summary-and-minutes/2022/february-2022"),
     ("2022-03-17", "https://www.bankofengland.co.uk/monetary-policy-summary-and-minutes/2022/march-2022"),
@@ -137,9 +150,13 @@ BOE_MEETINGS = [
     ("2026-03-19", "https://www.bankofengland.co.uk/monetary-policy-summary-and-minutes/2026/march-2026"),
     ("2026-04-30", "https://www.bankofengland.co.uk/monetary-policy-summary-and-minutes/2026/april-2026"),
     ("2026-06-18", "https://www.bankofengland.co.uk/monetary-policy-summary-and-minutes/2026/june-2026"),
+    # 2026 remainder — [BoE MPC dates](https://www.bankofengland.co.uk/monetary-policy/upcoming-mpc-dates)
+    ("2026-07-30", ""),
+    ("2026-09-17", ""),
+    ("2026-11-05", ""),
+    ("2026-12-17", ""),
 ]
 BOE_MEETINGS_BY_DATE = {date: url for date, url in BOE_MEETINGS}
-BOE_DEFAULT_DATE = BOE_MEETINGS[-1][0]
 
 # Bank of Japan Monetary Policy Meetings. The BoJ's English "Statement on
 # Monetary Policy" is published as a PDF whose filename encodes the date as
@@ -181,6 +198,13 @@ _BOJ_URLS = [
     "https://www.boj.or.jp/en/mopo/mpmdeci/mpr_2026/k260319a.pdf",
     "https://www.boj.or.jp/en/mopo/mpmdeci/mpr_2026/k260428a.pdf",
     "https://www.boj.or.jp/en/mopo/mpmdeci/mpr_2026/k260616a.pdf",
+    # 2026 remainder — [BoJ MPM schedule](https://www.boj.or.jp/en/mopo/mpmsche_minu/index.htm)
+]
+_BOJ_SCHEDULED = [
+    ("2026-07-31", ""),
+    ("2026-09-18", ""),
+    ("2026-10-30", ""),
+    ("2026-12-18", ""),
 ]
 
 
@@ -190,9 +214,8 @@ def _boj_date(url):
     return f"20{ymd[:2]}-{ymd[2:4]}-{ymd[4:6]}"
 
 
-BOJ_MEETINGS = sorted((_boj_date(u), u) for u in _BOJ_URLS)
+BOJ_MEETINGS = sorted((_boj_date(u), u) for u in _BOJ_URLS) + _BOJ_SCHEDULED
 BOJ_MEETINGS_BY_DATE = {date: url for date, url in BOJ_MEETINGS}
-BOJ_DEFAULT_DATE = BOJ_MEETINGS[-1][0]
 
 # Banco Central do Brasil (Copom). Statements come from the BCB's JSON API,
 # keyed by meeting number (nro_reuniao); the date is the decision date. Text is
@@ -234,9 +257,13 @@ BCB_MEETINGS = [
     ("2026-03-18", "https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados_detalhes?nro_reuniao=277"),
     ("2026-04-29", "https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados_detalhes?nro_reuniao=278"),
     ("2026-06-17", "https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados_detalhes?nro_reuniao=279"),
+    # 2026 remainder — [BCB Copom calendar](https://www.bcb.gov.br/controleinflacao/copom)
+    ("2026-08-05", ""),
+    ("2026-09-16", ""),
+    ("2026-11-04", ""),
+    ("2026-12-09", ""),
 ]
 BCB_MEETINGS_BY_DATE = {date: url for date, url in BCB_MEETINGS}
-BCB_DEFAULT_DATE = BCB_MEETINGS[-1][0]
 
 # Banco de México (Banxico). Banxico publishes the official English translation
 # of each "Monetary Policy Statement" as a PDF whose URL carries an opaque GUID
@@ -279,9 +306,13 @@ BANXICO_MEETINGS = [
     ("2026-03-26", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{0C0B38DB-88E4-DBA0-F925-550450052746}.pdf"),
     ("2026-05-07", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{CA5BAB07-D1DB-8A20-747A-642EB163A599}.pdf"),
     ("2026-06-25", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{1232328B-67C5-6882-B908-B200C19F3E3D}.pdf"),
+    # 2026 remainder — [Banxico calendar](https://www.banxico.org.mx/monetary-policy/d/{0C35369C-BF8F-E5A8-7710-FD5A6716474F}.pdf)
+    ("2026-08-06", ""),
+    ("2026-09-24", ""),
+    ("2026-11-05", ""),
+    ("2026-12-17", ""),
 ]
 BANXICO_MEETINGS_BY_DATE = {date: url for date, url in BANXICO_MEETINGS}
-BANXICO_DEFAULT_DATE = BANXICO_MEETINGS[-1][0]
 
 # Score bands and what they typically mean for the rate path.
 # The neutral zone is intentionally narrow (+-0.02) so "Neutral" only fires on
@@ -344,6 +375,26 @@ def prior_meeting(meetings, date_str):
     return meetings[idx - 1]
 
 
+def default_meeting_date(meetings, today=None):
+    """Pick the dropdown default: latest released meeting on or before today,
+    otherwise the next scheduled date on the calendar."""
+    if today is None:
+        today = datetime.now().date()
+    released_on_or_before = [
+        d for d, url in meetings
+        if url and datetime.strptime(d, "%Y-%m-%d").date() <= today
+    ]
+    if released_on_or_before:
+        return max(released_on_or_before)
+    upcoming = [
+        d for d, _ in meetings
+        if datetime.strptime(d, "%Y-%m-%d").date() >= today
+    ]
+    if upcoming:
+        return min(upcoming)
+    return meetings[-1][0]
+
+
 # Per-source configuration. Everything else (scoring, bands, verdicts, the
 # template) is shared, so a new central bank is just another entry here plus a
 # meeting list and lexicon.
@@ -352,7 +403,6 @@ SOURCE_CONFIG = {
         "scraper": "fed",
         "meetings": MEETINGS,
         "meetings_by_date": MEETINGS_BY_DATE,
-        "default_date": DEFAULT_DATE,
         "hawkish": None,
         "dovish": None,
         "bank_name": "U.S. Federal Reserve (FOMC)",
@@ -366,7 +416,6 @@ SOURCE_CONFIG = {
         "scraper": "ecb",
         "meetings": ECB_MEETINGS,
         "meetings_by_date": ECB_MEETINGS_BY_DATE,
-        "default_date": ECB_DEFAULT_DATE,
         "hawkish": ECB_HAWKISH,
         "dovish": ECB_DOVISH,
         "bank_name": "European Central Bank",
@@ -380,7 +429,6 @@ SOURCE_CONFIG = {
         "scraper": "boe",
         "meetings": BOE_MEETINGS,
         "meetings_by_date": BOE_MEETINGS_BY_DATE,
-        "default_date": BOE_DEFAULT_DATE,
         "hawkish": BOE_HAWKISH,
         "dovish": BOE_DOVISH,
         "bank_name": "Bank of England (MPC)",
@@ -394,7 +442,6 @@ SOURCE_CONFIG = {
         "scraper": "boj",
         "meetings": BOJ_MEETINGS,
         "meetings_by_date": BOJ_MEETINGS_BY_DATE,
-        "default_date": BOJ_DEFAULT_DATE,
         "hawkish": BOJ_HAWKISH,
         "dovish": BOJ_DOVISH,
         "bank_name": "Bank of Japan",
@@ -408,7 +455,6 @@ SOURCE_CONFIG = {
         "scraper": "bcb",
         "meetings": BCB_MEETINGS,
         "meetings_by_date": BCB_MEETINGS_BY_DATE,
-        "default_date": BCB_DEFAULT_DATE,
         "hawkish": BCB_HAWKISH,
         "dovish": BCB_DOVISH,
         "bank_name": "Banco Central do Brasil (Copom)",
@@ -422,7 +468,6 @@ SOURCE_CONFIG = {
         "scraper": "banxico",
         "meetings": BANXICO_MEETINGS,
         "meetings_by_date": BANXICO_MEETINGS_BY_DATE,
-        "default_date": BANXICO_DEFAULT_DATE,
         "hawkish": BANXICO_HAWKISH,
         "dovish": BANXICO_DOVISH,
         "bank_name": "Banco de México (Banxico)",
@@ -448,9 +493,9 @@ def build_report(source):
     # on, so a normal Run Report stays offline/instant unless AI is requested.
     ai_on = request.args.get("ai") == "on"
 
-    selected_date = request.args.get("meeting", cfg["default_date"])
+    selected_date = request.args.get("meeting", default_meeting_date(meetings))
     if selected_date not in meetings_by_date:
-        selected_date = cfg["default_date"]
+        selected_date = default_meeting_date(meetings)
     url = meetings_by_date[selected_date]
     # An empty URL marks a scheduled-but-unreleased meeting (e.g. one that hasn't
     # happened yet), which we surface explicitly rather than trying to fetch.
