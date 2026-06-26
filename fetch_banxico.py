@@ -14,6 +14,8 @@ from scraper import fetch_and_cache
 
 def main():
     for date, url in BANXICO_MEETINGS:
+        if not url:
+            continue
         try:
             text = fetch_and_cache(url, source="banxico")
             print(f"cached {date}  ({len(text):>5} chars)")

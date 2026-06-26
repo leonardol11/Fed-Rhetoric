@@ -278,15 +278,9 @@ BANXICO_MEETINGS = [
     ("2026-02-05", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{A09BC2E1-83D7-6E38-2C95-1E9D6B4D3D5F}.pdf"),
     ("2026-03-26", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{0C0B38DB-88E4-DBA0-F925-550450052746}.pdf"),
     ("2026-05-07", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{CA5BAB07-D1DB-8A20-747A-642EB163A599}.pdf"),
-    # Scheduled but not yet held: an empty URL marks the statement as unreleased,
-    # so the app shows a clear "not released yet" notice instead of attempting a
-    # fetch. Fill in the real PDF URL (from fetch_banxico.py) once it's published.
-    ("2026-06-26", ""),
+    ("2026-06-25", "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/{1232328B-67C5-6882-B908-B200C19F3E3D}.pdf"),
 ]
 BANXICO_MEETINGS_BY_DATE = {date: url for date, url in BANXICO_MEETINGS}
-# Default to the most recent meeting on the calendar, even if it's still
-# scheduled/unreleased (e.g. June 26, 2026): a fresh load lands on the latest
-# date, and running it surfaces the "not released yet" notice until it's out.
 BANXICO_DEFAULT_DATE = BANXICO_MEETINGS[-1][0]
 
 # Score bands and what they typically mean for the rate path.
