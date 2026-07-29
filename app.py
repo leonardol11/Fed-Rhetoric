@@ -90,11 +90,11 @@ _ECB_URLS = [
     "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.mp260319~3057739775.en.html",
     "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.mp260430~81b7179e6f.en.html",
     "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.mp260611~4d41bd5e83.en.html",
+    "https://www.ecb.europa.eu/press/pr/date/2026/html/ecb.mp260723~29f24d99bc.en.html",
     # 2026 remainder — [ECB Governing Council calendar](https://www.ecb.europa.eu/press/calendars/mgcgc/html/index.en.html)
     # URLs unknown until published; empty string shows "not released yet".
 ]
 _ECB_SCHEDULED = [
-    ("2026-07-23", ""),
     ("2026-09-10", ""),
     ("2026-10-29", ""),
     ("2026-12-17", ""),
