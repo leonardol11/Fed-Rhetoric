@@ -34,12 +34,19 @@ _MEETING_DATES = [
     "20260128", "20260318", "20260429", "20260617",
 ]
 
+_FED_SCHEDULED_DATES = [
+    "20260729",
+    "20260916",
+    "20261028",
+    "20261209",
+]
+
 _FED_SCHEDULED = [
-    # 2026 remainder — [FOMC calendar](https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm)
-    ("2026-07-29", ""),
-    ("2026-09-16", ""),
-    ("2026-10-28", ""),
-    ("2026-12-09", ""),
+    (
+        f"{d[:4]}-{d[4:6]}-{d[6:]}",
+        f"https://www.federalreserve.gov/newsevents/pressreleases/monetary{d}a.htm",
+    )
+    for d in _FED_SCHEDULED_DATES
 ]
 
 MEETINGS = [
