@@ -487,13 +487,12 @@ def build_report(source):
     ran = "meeting" in request.args
 
     # AI mode is an opt-in toggle for all banks except Banxico, where it defaults on.
-    if source == "banxico":
-        if "ai_default" in request.args:
-            ai_on = request.args.get("ai") == "on"
-        else:
-            ai_on = True
-    else:
+    # AI mode defaults on for every central bank.
+# After the form is submitted, respect the user's toggle choice.
+    if "ai_default" in request.args:
         ai_on = request.args.get("ai") == "on"
+    else:
+        ai_on = True
 
     selected_date = request.args.get("meeting", default_meeting_date(meetings))
     if selected_date not in meetings_by_date:
