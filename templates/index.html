@@ -548,13 +548,20 @@
   }
   .chart-wrap {
     position: relative;
-    height: 340px;
+    height: 460px;
     width: 100%;
     margin-top: 18px;
     padding-top: 4px;
     border-top: 1px solid var(--border);
+    overflow-x: auto;
+    overflow-y: hidden;
   }
   .chart-wrap.has-data { padding-top: 16px; }
+  .chart-scroll {
+    position: relative;
+    height: 100%;
+    min-width: 100%;
+  }
   .chart-empty {
     font-family: var(--serif);
     font-style: italic;
@@ -622,7 +629,7 @@
     .layout { grid-template-columns: 1fr; }
     .legend-panel { position: static; }
     .timeline-opts { grid-template-columns: 1fr 1fr; }
-    .chart-wrap { height: 280px; }
+    .chart-wrap { height: 360px; }
   }
   @media print {
     form.controls, .actions, .timeline-actions, .timeline-opts, .timeline-checks, .tl-hover-hint { display: none; }
@@ -797,8 +804,10 @@
       <div class="timeline-progress" id="tl-progress"><div class="bar" id="tl-progress-bar"></div></div>
 
       <div class="chart-wrap" id="tl-chart-wrap">
-        <canvas id="tone-chart" aria-label="Tone score over meetings"></canvas>
-        <div class="chart-empty" id="tl-empty">No series yet. Run All Meetings to generate the graph.</div>
+        <div class="chart-scroll" id="tl-chart-scroll">
+          <canvas id="tone-chart" aria-label="Tone score over meetings"></canvas>
+          <div class="chart-empty" id="tl-empty">No series yet. Run All Meetings to generate the graph.</div>
+        </div>
       </div>
       <div class="tl-hover-hint" id="tl-hover-hint">Hover a meeting point for details</div>
       <div class="tl-hover" id="tl-hover" aria-live="polite">
@@ -857,6 +866,7 @@
       var progressBar = document.getElementById('tl-progress-bar');
       var emptyEl = document.getElementById('tl-empty');
       var chartWrap = document.getElementById('tl-chart-wrap');
+      var chartScroll = document.getElementById('tl-chart-scroll');
       var canvas = document.getElementById('tone-chart');
       var hoverEl = document.getElementById('tl-hover');
       var hoverHint = document.getElementById('tl-hover-hint');
@@ -912,22 +922,12 @@
       function fillDateSelects() {
         fromSel.innerHTML = '';
         toSel.innerHTML = '';
-        // Default "From" to ~2 years before the latest released meeting so
-        // Run All is practical for AI scoring without trimming history away.
-        var defaultFromIdx = 0;
-        if (MEETINGS.length) {
-          var latest = MEETINGS[MEETINGS.length - 1].date;
-          var y = parseInt(latest.slice(0, 4), 10) - 2;
-          var cutoff = y + latest.slice(4);
-          for (var i = 0; i < MEETINGS.length; i++) {
-            if (MEETINGS[i].date >= cutoff) { defaultFromIdx = i; break; }
-          }
-        }
+        // Default to the full released history so Run All plots every meeting.
         MEETINGS.forEach(function (m, i) {
           var o1 = document.createElement('option');
           o1.value = m.date;
           o1.textContent = m.label;
-          if (i === defaultFromIdx) o1.selected = true;
+          if (i === 0) o1.selected = true;
           fromSel.appendChild(o1);
           var o2 = document.createElement('option');
           o2.value = m.date;
@@ -937,14 +937,31 @@
         });
       }
 
+      function shortLabel(dateStr, fullLabel) {
+        // Compact x-axis labels so every meeting can be shown.
+        if (!dateStr || dateStr.length < 7) return fullLabel || dateStr;
+        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        var y = dateStr.slice(0, 4);
+        var m = parseInt(dateStr.slice(5, 7), 10) - 1;
+        if (m < 0 || m > 11) return fullLabel || dateStr;
+        return months[m] + " '" + y.slice(2);
+      }
+
       function filteredMeetings() {
         var from = fromSel.value;
         var to = toSel.value;
         if (from && to && from > to) {
           var tmp = from; from = to; to = tmp;
         }
+        // Don't pull future dated placeholders into the series (they have no statement yet).
+        var now = new Date();
+        var today = now.getFullYear() + '-' +
+          String(now.getMonth() + 1).padStart(2, '0') + '-' +
+          String(now.getDate()).padStart(2, '0');
         return MEETINGS.filter(function (m) {
-          return (!from || m.date >= from) && (!to || m.date <= to);
+          return (!from || m.date >= from) &&
+            (!to || m.date <= to) &&
+            m.date <= today;
         });
       }
 
@@ -990,6 +1007,7 @@
           emptyEl.style.display = '';
           canvas.style.display = 'none';
           chartWrap.classList.remove('has-data');
+          chartScroll.style.width = '';
           setHoverChrome(false);
           return;
         }
@@ -998,7 +1016,15 @@
         chartWrap.classList.add('has-data');
         setHoverChrome(true);
 
-        var labels = points.map(function (p) { return p.label_date || p.date; });
+        // Widen the canvas for long series so every meeting gets a point + label
+        // instead of Chart.js auto-skipping ticks to fit a narrow plot.
+        var perPoint = points.length > 40 ? 34 : (points.length > 24 ? 40 : 48);
+        var plotWidth = Math.max(chartWrap.clientWidth || 0, points.length * perPoint);
+        chartScroll.style.width = plotWidth + 'px';
+
+        var labels = points.map(function (p) {
+          return shortLabel(p.date, p.label_date || p.date);
+        });
         var data = points.map(function (p) { return p.score; });
         var color = '#16233f';
         var fixedY = yAxisSel.value === 'fixed';
@@ -1021,6 +1047,7 @@
         var options = {
           responsive: true,
           maintainAspectRatio: false,
+          layout: { padding: { bottom: 4 } },
           interaction: { mode: 'index', intersect: false },
           onHover: function (evt, elements) {
             canvas.style.cursor = elements && elements.length ? 'pointer' : 'default';
@@ -1044,11 +1071,10 @@
           scales: {
             x: {
               ticks: {
-                maxRotation: 45,
-                minRotation: 0,
-                autoSkip: true,
-                maxTicksLimit: 14,
-                font: { size: 10, family: '-apple-system, Helvetica Neue, Arial, sans-serif' },
+                maxRotation: 90,
+                minRotation: 60,
+                autoSkip: false,
+                font: { size: 9, family: '-apple-system, Helvetica Neue, Arial, sans-serif' },
                 color: '#6b6b6b'
               },
               grid: { color: 'rgba(216, 212, 204, 0.55)' }
@@ -1173,7 +1199,11 @@
             } else {
               points = batch.slice().sort(function (a, b) { return a.date < b.date ? -1 : 1; });
               setProgress(list.length, list.length);
-              setStatus('Plotted <strong>' + points.length + '</strong> lexicon scores.');
+              var miss = list.length - points.length;
+              setStatus(
+                'Plotted <strong>' + points.length + '</strong> of <strong>' + list.length + '</strong> meetings' +
+                (miss ? ' &middot; ' + miss + ' not yet available' : '') + '.'
+              );
               renderChart();
             }
           } else {
@@ -1205,8 +1235,10 @@
             if (abortRun) {
               setStatus('Stopped after <strong>' + ok + '</strong> meeting' + (ok === 1 ? '' : 's') + '.');
             } else if (ok) {
-              setStatus('Plotted <strong>' + ok + '</strong> AI tone score' + (ok === 1 ? '' : 's') +
-                (failed ? ' &middot; ' + failed + ' skipped' : '') + '.');
+              setStatus(
+                'Plotted <strong>' + ok + '</strong> of <strong>' + list.length + '</strong> meetings' +
+                (failed ? ' &middot; ' + failed + ' not yet available' : '') + '.'
+              );
             } else if (!statusEl.classList.contains('error')) {
               setStatus('No AI scores returned. Check Groq configuration or try Lexicon mode.', true);
             }

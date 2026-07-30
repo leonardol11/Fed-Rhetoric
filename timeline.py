@@ -60,7 +60,14 @@ def score_lexicon_point(url, source, hawkish, dovish):
     try:
         text = fetch_and_cache(url, source=source, fresh=False)
     except requests.exceptions.RequestException:
-        return None
+        text = ""
+    if not text or not text.strip():
+        # Empty bundled placeholder (or miss) — try a live fetch once so newly
+        # published statements still appear on the timeline.
+        try:
+            text = fetch_and_cache(url, source=source, fresh=True)
+        except requests.exceptions.RequestException:
+            return None
     if not text or not text.strip():
         return None
     result = score_statement(text, hawkish, dovish)
@@ -90,6 +97,12 @@ def score_ai_point(url, source, bank_name, meeting_label, meeting_noun, force=Fa
         text = fetch_and_cache(url, source=source, fresh=False)
     except requests.exceptions.RequestException as e:
         return {"available": False, "error": str(e), "score": None, "label": None, "mode": "ai", "cached": False}
+
+    if not text or not text.strip():
+        try:
+            text = fetch_and_cache(url, source=source, fresh=True)
+        except requests.exceptions.RequestException as e:
+            return {"available": False, "error": str(e), "score": None, "label": None, "mode": "ai", "cached": False}
 
     if not text or not text.strip():
         return None
