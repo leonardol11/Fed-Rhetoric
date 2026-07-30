@@ -158,11 +158,13 @@ BOE_MEETINGS = [
     ("2026-03-19", "https://www.bankofengland.co.uk/monetary-policy-summary-and-minutes/2026/march-2026"),
     ("2026-04-30", "https://www.bankofengland.co.uk/monetary-policy-summary-and-minutes/2026/april-2026"),
     ("2026-06-18", "https://www.bankofengland.co.uk/monetary-policy-summary-and-minutes/2026/june-2026"),
+    ("2026-07-30", "https://www.bankofengland.co.uk/monetary-policy-summary-and-minutes/2026/july-2026"),
     # 2026 remainder — [BoE MPC dates](https://www.bankofengland.co.uk/monetary-policy/upcoming-mpc-dates)
-    ("2026-07-30", ""),
-    ("2026-09-17", ""),
-    ("2026-11-05", ""),
-    ("2026-12-17", ""),
+    # Month slug is predictable; Run Report fetches live (fresh=True) so an
+    # unpublished page still surfaces as "not published yet".
+    ("2026-09-17", "https://www.bankofengland.co.uk/monetary-policy-summary-and-minutes/2026/september-2026"),
+    ("2026-11-05", "https://www.bankofengland.co.uk/monetary-policy-summary-and-minutes/2026/november-2026"),
+    ("2026-12-17", "https://www.bankofengland.co.uk/monetary-policy-summary-and-minutes/2026/december-2026"),
 ]
 BOE_MEETINGS_BY_DATE = {date: url for date, url in BOE_MEETINGS}
 
@@ -206,14 +208,16 @@ _BOJ_URLS = [
     "https://www.boj.or.jp/en/mopo/mpmdeci/mpr_2026/k260319a.pdf",
     "https://www.boj.or.jp/en/mopo/mpmdeci/mpr_2026/k260428a.pdf",
     "https://www.boj.or.jp/en/mopo/mpmdeci/mpr_2026/k260616a.pdf",
+    # July 30–31 MPM: Statement on Monetary Policy posts as k260731a.pdf after
+    # the meeting ends (releases later on July 31). URL is pre-wired so Run
+    # Report can fetch as soon as BoJ publishes.
+    "https://www.boj.or.jp/en/mopo/mpmdeci/mpr_2026/k260731a.pdf",
     # 2026 remainder — [BoJ MPM schedule](https://www.boj.or.jp/en/mopo/mpmsche_minu/index.htm)
+    "https://www.boj.or.jp/en/mopo/mpmdeci/mpr_2026/k260918a.pdf",
+    "https://www.boj.or.jp/en/mopo/mpmdeci/mpr_2026/k261030a.pdf",
+    "https://www.boj.or.jp/en/mopo/mpmdeci/mpr_2026/k261218a.pdf",
 ]
-_BOJ_SCHEDULED = [
-    ("2026-07-31", ""),
-    ("2026-09-18", ""),
-    ("2026-10-30", ""),
-    ("2026-12-18", ""),
-]
+_BOJ_SCHEDULED = []
 
 
 def _boj_date(url):
