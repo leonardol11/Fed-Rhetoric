@@ -404,17 +404,174 @@
   }
   .legend-row.current .name { color: var(--navy); }
 
+  .timeline-section {
+    margin-top: 36px;
+    padding-top: 28px;
+    border-top: 2px solid var(--navy);
+  }
+  .timeline-section .section-head {
+    text-align: center;
+    margin-bottom: 18px;
+  }
+  .timeline-section .section-title {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    color: var(--navy);
+  }
+  .timeline-section .section-sub {
+    font-style: italic;
+    font-size: 14px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .timeline-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--gold);
+    padding: 18px 20px 22px;
+  }
+  .timeline-opts {
+    font-family: var(--sans);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px 14px;
+    align-items: end;
+    margin-bottom: 14px;
+  }
+  .timeline-opts .opt {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+  }
+  .timeline-opts .opt label,
+  .timeline-opts .check label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--muted);
+  }
+  .timeline-opts select,
+  .timeline-opts input[type="color"] {
+    font-family: var(--sans);
+    font-size: 13px;
+    padding: 8px 9px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    background: var(--paper);
+    color: var(--ink);
+    width: 100%;
+  }
+  .timeline-opts input[type="color"] {
+    padding: 3px;
+    height: 36px;
+    cursor: pointer;
+  }
+  .timeline-opts .checks {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px 18px;
+    align-items: center;
+    padding-top: 2px;
+  }
+  .timeline-opts .check {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .timeline-opts .check input {
+    accent-color: var(--navy);
+  }
+  .timeline-actions {
+    font-family: var(--sans);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin: 4px 0 16px;
+  }
+  .timeline-actions .run-all-btn {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    padding: 10px 18px;
+    border-radius: 3px;
+    border: 1px solid var(--navy);
+    background: var(--navy);
+    color: #fff;
+    cursor: pointer;
+  }
+  .timeline-actions .run-all-btn:hover { background: #1f3258; }
+  .timeline-actions .run-all-btn:disabled {
+    opacity: 0.55;
+    cursor: wait;
+  }
+  .timeline-actions .ghost-btn {
+    font-family: var(--sans);
+    font-size: 12px;
+    padding: 8px 14px;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .timeline-actions .ghost-btn:hover { border-color: var(--navy); color: var(--navy); }
+  .timeline-status {
+    font-size: 12px;
+    color: var(--muted);
+    flex: 1;
+    min-width: 140px;
+  }
+  .timeline-status strong { color: var(--navy); }
+  .timeline-status.error { color: var(--hawk); }
+  .timeline-progress {
+    width: 100%;
+    height: 4px;
+    background: #ebe7dc;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 14px;
+    display: none;
+  }
+  .timeline-progress.visible { display: block; }
+  .timeline-progress .bar {
+    height: 100%;
+    width: 0%;
+    background: var(--gold);
+    transition: width 0.2s ease;
+  }
+  .chart-wrap {
+    position: relative;
+    height: 340px;
+    width: 100%;
+  }
+  .chart-empty {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 14px;
+    color: var(--muted);
+    text-align: center;
+    padding: 48px 12px;
+  }
   @media (max-width: 700px) {
     .layout { grid-template-columns: 1fr; }
     .legend-panel { position: static; }
+    .chart-wrap { height: 280px; }
   }
   @media print {
-    form.controls, .actions { display: none; }
+    form.controls, .actions, .timeline-actions, .timeline-opts { display: none; }
     body { margin: 0; max-width: none; background: #fff; }
     .layout { grid-template-columns: 1fr 240px; }
-    .card, .legend-card { border: 1px solid #999; }
+    .card, .legend-card, .timeline-card { border: 1px solid #999; }
   }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 </head>
 <body>
   <header class="masthead">
@@ -532,6 +689,71 @@
     </aside>
   </div>
 
+  <section class="timeline-section" id="tone-timeline" aria-label="Tone timeline">
+    <div class="section-head">
+      <div class="section-title">TONE TIMELINE</div>
+      <div class="section-sub">AI tone score for each {{ meeting_noun }} &middot; customize and run all below</div>
+    </div>
+
+    <div class="timeline-card">
+      <div class="timeline-opts" id="timeline-opts">
+        <div class="opt">
+          <label for="tl-from">From</label>
+          <select id="tl-from"></select>
+        </div>
+        <div class="opt">
+          <label for="tl-to">To</label>
+          <select id="tl-to"></select>
+        </div>
+        <div class="opt">
+          <label for="tl-mode">Score source</label>
+          <select id="tl-mode">
+            <option value="ai" selected>AI (Groq)</option>
+            <option value="lexicon">Lexicon</option>
+          </select>
+        </div>
+        <div class="opt">
+          <label for="tl-chart">Chart type</label>
+          <select id="tl-chart">
+            <option value="line" selected>Line</option>
+            <option value="bar">Bar</option>
+          </select>
+        </div>
+        <div class="opt">
+          <label for="tl-yaxis">Y-axis</label>
+          <select id="tl-yaxis">
+            <option value="fixed" selected>Fixed (&minus;1 to +1)</option>
+            <option value="auto">Auto-fit</option>
+          </select>
+        </div>
+        <div class="opt">
+          <label for="tl-color">Line / bar color</label>
+          <input type="color" id="tl-color" value="#16233f" title="Series color">
+        </div>
+        <div class="checks">
+          <label class="check"><input type="checkbox" id="tl-bands" checked> Band shading</label>
+          <label class="check"><input type="checkbox" id="tl-zero" checked> Zero line</label>
+          <label class="check"><input type="checkbox" id="tl-points" checked> Meeting points</label>
+          <label class="check"><input type="checkbox" id="tl-fill"> Area fill</label>
+        </div>
+      </div>
+
+      <div class="timeline-actions">
+        <button type="button" class="run-all-btn" id="tl-run">Run All Meetings</button>
+        <button type="button" class="ghost-btn" id="tl-stop" hidden>Stop</button>
+        <button type="button" class="ghost-btn" id="tl-clear">Clear graph</button>
+        <span class="timeline-status" id="tl-status">Choose options, then click <strong>Run All Meetings</strong> to plot tone scores.</span>
+      </div>
+      <div class="timeline-progress" id="tl-progress"><div class="bar" id="tl-progress-bar"></div></div>
+
+      <div class="chart-wrap">
+        <canvas id="tone-chart" aria-label="Tone score over meetings"></canvas>
+        <div class="chart-empty" id="tl-empty">No series yet. Run All Meetings to generate the graph.</div>
+      </div>
+    </div>
+  </section>
+
+  <script type="application/json" id="timeline-meetings-data">{{ timeline_meetings | tojson }}</script>
   <script>
     document.getElementById('meeting-select').addEventListener('change', function () {
       document.getElementById('meeting-date-label').textContent = '';
@@ -548,6 +770,377 @@
       ql.href = durl || '#';
       ql.style.visibility = durl ? 'visible' : 'hidden';
     });
+
+    (function () {
+      var SOURCE = {{ source | tojson }};
+      var MEETINGS = JSON.parse(document.getElementById('timeline-meetings-data').textContent || '[]');
+      var BANDS = [
+        { yMin: 0.25, yMax: 1, color: 'rgba(140, 31, 31, 0.08)' },
+        { yMin: 0.02, yMax: 0.25, color: 'rgba(140, 31, 31, 0.04)' },
+        { yMin: -0.02, yMax: 0.02, color: 'rgba(28, 28, 28, 0.03)' },
+        { yMin: -0.25, yMax: -0.02, color: 'rgba(31, 92, 63, 0.04)' },
+        { yMin: -1, yMax: -0.25, color: 'rgba(31, 92, 63, 0.08)' }
+      ];
+
+      var fromSel = document.getElementById('tl-from');
+      var toSel = document.getElementById('tl-to');
+      var modeSel = document.getElementById('tl-mode');
+      var chartSel = document.getElementById('tl-chart');
+      var yAxisSel = document.getElementById('tl-yaxis');
+      var colorInput = document.getElementById('tl-color');
+      var bandsChk = document.getElementById('tl-bands');
+      var zeroChk = document.getElementById('tl-zero');
+      var pointsChk = document.getElementById('tl-points');
+      var fillChk = document.getElementById('tl-fill');
+      var runBtn = document.getElementById('tl-run');
+      var stopBtn = document.getElementById('tl-stop');
+      var clearBtn = document.getElementById('tl-clear');
+      var statusEl = document.getElementById('tl-status');
+      var progressEl = document.getElementById('tl-progress');
+      var progressBar = document.getElementById('tl-progress-bar');
+      var emptyEl = document.getElementById('tl-empty');
+      var canvas = document.getElementById('tone-chart');
+
+      var chart = null;
+      var points = [];
+      var abortRun = false;
+      var running = false;
+
+      function fillDateSelects() {
+        fromSel.innerHTML = '';
+        toSel.innerHTML = '';
+        // Default "From" to ~2 years before the latest released meeting so
+        // Run All is practical for AI scoring without trimming history away.
+        var defaultFromIdx = 0;
+        if (MEETINGS.length) {
+          var latest = MEETINGS[MEETINGS.length - 1].date;
+          var y = parseInt(latest.slice(0, 4), 10) - 2;
+          var cutoff = y + latest.slice(4);
+          for (var i = 0; i < MEETINGS.length; i++) {
+            if (MEETINGS[i].date >= cutoff) { defaultFromIdx = i; break; }
+          }
+        }
+        MEETINGS.forEach(function (m, i) {
+          var o1 = document.createElement('option');
+          o1.value = m.date;
+          o1.textContent = m.label;
+          if (i === defaultFromIdx) o1.selected = true;
+          fromSel.appendChild(o1);
+          var o2 = document.createElement('option');
+          o2.value = m.date;
+          o2.textContent = m.label;
+          if (i === MEETINGS.length - 1) o2.selected = true;
+          toSel.appendChild(o2);
+        });
+      }
+
+      function filteredMeetings() {
+        var from = fromSel.value;
+        var to = toSel.value;
+        if (from && to && from > to) {
+          var tmp = from; from = to; to = tmp;
+        }
+        return MEETINGS.filter(function (m) {
+          return (!from || m.date >= from) && (!to || m.date <= to);
+        });
+      }
+
+      function setStatus(msg, isError) {
+        statusEl.innerHTML = msg;
+        statusEl.className = 'timeline-status' + (isError ? ' error' : '');
+      }
+
+      function setProgress(done, total) {
+        if (total <= 0) {
+          progressEl.classList.remove('visible');
+          progressBar.style.width = '0%';
+          return;
+        }
+        progressEl.classList.add('visible');
+        progressBar.style.width = Math.round((done / total) * 100) + '%';
+      }
+
+      function bandPlugin() {
+        return {
+          id: 'toneBands',
+          beforeDraw: function (c) {
+            if (!bandsChk.checked) return;
+            var y = c.scales.y;
+            var area = c.chartArea;
+            if (!y || !area) return;
+            var ctx = c.ctx;
+            BANDS.forEach(function (b) {
+              var top = y.getPixelForValue(b.yMax);
+              var bottom = y.getPixelForValue(b.yMin);
+              ctx.save();
+              ctx.fillStyle = b.color;
+              ctx.fillRect(area.left, top, area.right - area.left, bottom - top);
+              ctx.restore();
+            });
+          }
+        };
+      }
+
+      function renderChart() {
+        if (!points.length) {
+          if (chart) { chart.destroy(); chart = null; }
+          emptyEl.style.display = '';
+          canvas.style.display = 'none';
+          return;
+        }
+        emptyEl.style.display = 'none';
+        canvas.style.display = '';
+
+        var labels = points.map(function (p) { return p.label_date || p.date; });
+        var data = points.map(function (p) { return p.score; });
+        var color = colorInput.value || '#16233f';
+        var type = chartSel.value;
+        var fixedY = yAxisSel.value === 'fixed';
+        var showPoints = pointsChk.checked;
+        var fill = fillChk.checked;
+
+        var dataset = {
+          label: modeSel.value === 'ai' ? 'AI tone score' : 'Lexicon tone score',
+          data: data,
+          borderColor: color,
+          backgroundColor: type === 'bar'
+            ? color
+            : (fill ? hexToRgba(color, 0.12) : 'transparent'),
+          borderWidth: type === 'bar' ? 0 : 2,
+          pointRadius: type === 'line' && showPoints ? 3.5 : (type === 'line' ? 0 : undefined),
+          pointHoverRadius: 5,
+          pointBackgroundColor: color,
+          fill: type === 'line' ? fill : false,
+          tension: 0.22,
+          barPercentage: 0.75,
+          categoryPercentage: 0.9
+        };
+
+        var options = {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#16233f',
+              titleFont: { family: 'EB Garamond', size: 14 },
+              bodyFont: { family: '-apple-system, Helvetica Neue, Arial, sans-serif', size: 12 },
+              padding: 10,
+              callbacks: {
+                afterLabel: function (ctx) {
+                  var p = points[ctx.dataIndex];
+                  if (!p) return '';
+                  var lines = [];
+                  if (p.verdict || p.label) lines.push((p.verdict || p.label));
+                  if (p.summary) lines.push(p.summary);
+                  return lines;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              ticks: {
+                maxRotation: 45,
+                minRotation: 0,
+                autoSkip: true,
+                maxTicksLimit: 14,
+                font: { size: 10, family: '-apple-system, Helvetica Neue, Arial, sans-serif' },
+                color: '#6b6b6b'
+              },
+              grid: { color: 'rgba(216, 212, 204, 0.55)' }
+            },
+            y: {
+              min: fixedY ? -1 : undefined,
+              max: fixedY ? 1 : undefined,
+              title: {
+                display: true,
+                text: 'Tone score (−1 dovish · +1 hawkish)',
+                font: { size: 11, family: '-apple-system, Helvetica Neue, Arial, sans-serif' },
+                color: '#6b6b6b'
+              },
+              ticks: {
+                font: { size: 10, family: '-apple-system, Helvetica Neue, Arial, sans-serif' },
+                color: '#6b6b6b',
+                callback: function (v) { return (v > 0 ? '+' : '') + Number(v).toFixed(1); }
+              },
+              grid: { color: 'rgba(216, 212, 204, 0.55)' }
+            }
+          }
+        };
+
+        if (zeroChk.checked) {
+          options.plugins.annotation = undefined;
+          // Draw zero via a lightweight afterDraw when annotation plugin isn't loaded.
+        }
+
+        if (chart) chart.destroy();
+        chart = new Chart(canvas.getContext('2d'), {
+          type: type,
+          data: { labels: labels, datasets: [dataset] },
+          options: options,
+          plugins: [bandPlugin(), zeroLinePlugin()]
+        });
+      }
+
+      function zeroLinePlugin() {
+        return {
+          id: 'zeroLine',
+          afterDraw: function (c) {
+            if (!zeroChk.checked) return;
+            var y = c.scales.y;
+            var area = c.chartArea;
+            if (!y || !area) return;
+            var y0 = y.getPixelForValue(0);
+            if (y0 < area.top || y0 > area.bottom) return;
+            var ctx = c.ctx;
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(area.left, y0);
+            ctx.lineTo(area.right, y0);
+            ctx.strokeStyle = '#a98e54';
+            ctx.lineWidth = 1.25;
+            ctx.setLineDash([4, 3]);
+            ctx.stroke();
+            ctx.restore();
+          }
+        };
+      }
+
+      function hexToRgba(hex, alpha) {
+        var h = (hex || '#16233f').replace('#', '');
+        if (h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+        var r = parseInt(h.slice(0, 2), 16);
+        var g = parseInt(h.slice(2, 4), 16);
+        var b = parseInt(h.slice(4, 6), 16);
+        return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
+      }
+
+      function applyCustomizations() {
+        if (points.length) renderChart();
+      }
+
+      ['change', 'input'].forEach(function (evt) {
+        [chartSel, yAxisSel, colorInput, bandsChk, zeroChk, pointsChk, fillChk].forEach(function (el) {
+          el.addEventListener(evt, applyCustomizations);
+        });
+      });
+
+      async function fetchPoint(meeting, mode) {
+        var url = '/api/' + SOURCE + '/point?date=' + encodeURIComponent(meeting.date) +
+          '&mode=' + encodeURIComponent(mode);
+        var resp = await fetch(url);
+        var data = await resp.json().catch(function () { return {}; });
+        if (!resp.ok) {
+          var err = new Error(data.error || ('HTTP ' + resp.status));
+          err.status = resp.status;
+          err.payload = data;
+          throw err;
+        }
+        return data;
+      }
+
+      async function fetchLexiconBatch(list) {
+        if (!list.length) return [];
+        var url = '/api/' + SOURCE + '/timeline?from=' + encodeURIComponent(list[0].date) +
+          '&to=' + encodeURIComponent(list[list.length - 1].date);
+        var resp = await fetch(url);
+        var data = await resp.json().catch(function () { return {}; });
+        if (!resp.ok) throw new Error(data.error || ('HTTP ' + resp.status));
+        return data.points || [];
+      }
+
+      async function runAll() {
+        if (running) return;
+        var list = filteredMeetings();
+        if (!list.length) {
+          setStatus('No released meetings in the selected date range.', true);
+          return;
+        }
+        var mode = modeSel.value;
+        running = true;
+        abortRun = false;
+        runBtn.disabled = true;
+        stopBtn.hidden = false;
+        points = [];
+        renderChart();
+        setProgress(0, list.length);
+
+        try {
+          if (mode === 'lexicon') {
+            setStatus('Scoring all meetings with lexicon&hellip;');
+            var batch = await fetchLexiconBatch(list);
+            if (abortRun) {
+              setStatus('Stopped.');
+            } else {
+              points = batch.slice().sort(function (a, b) { return a.date < b.date ? -1 : 1; });
+              setProgress(list.length, list.length);
+              setStatus('Plotted <strong>' + points.length + '</strong> lexicon scores.');
+              renderChart();
+            }
+          } else {
+            var ok = 0;
+            var failed = 0;
+            for (var i = 0; i < list.length; i++) {
+              if (abortRun) break;
+              var m = list[i];
+              setStatus('AI scoring <strong>' + (m.label || m.date) + '</strong> (' + (i + 1) + ' / ' + list.length + ')&hellip;');
+              try {
+                var p = await fetchPoint(m, 'ai');
+                if (p && p.score !== null && p.score !== undefined) {
+                  points.push(p);
+                  points.sort(function (a, b) { return a.date < b.date ? -1 : 1; });
+                  ok++;
+                  renderChart();
+                } else {
+                  failed++;
+                }
+              } catch (e) {
+                failed++;
+                if (e.status === 503 && e.payload && /GROQ_API_KEY/i.test(String(e.payload.error || ''))) {
+                  setStatus('Set <code>GROQ_API_KEY</code> to generate AI tone scores, or switch Score source to Lexicon.', true);
+                  break;
+                }
+              }
+              setProgress(i + 1, list.length);
+            }
+            if (abortRun) {
+              setStatus('Stopped after <strong>' + ok + '</strong> meeting' + (ok === 1 ? '' : 's') + '.');
+            } else if (ok) {
+              setStatus('Plotted <strong>' + ok + '</strong> AI tone score' + (ok === 1 ? '' : 's') +
+                (failed ? ' &middot; ' + failed + ' skipped' : '') + '.');
+            } else if (!statusEl.classList.contains('error')) {
+              setStatus('No AI scores returned. Check Groq configuration or try Lexicon mode.', true);
+            }
+          }
+        } catch (e) {
+          setStatus(e.message || 'Failed to build timeline.', true);
+        } finally {
+          running = false;
+          runBtn.disabled = false;
+          stopBtn.hidden = true;
+          if (!running) {
+            setTimeout(function () {
+              if (!running) progressEl.classList.remove('visible');
+            }, 600);
+          }
+        }
+      }
+
+      runBtn.addEventListener('click', runAll);
+      stopBtn.addEventListener('click', function () { abortRun = true; });
+      clearBtn.addEventListener('click', function () {
+        abortRun = true;
+        points = [];
+        renderChart();
+        setProgress(0, 0);
+        setStatus('Graph cleared. Choose options, then click <strong>Run All Meetings</strong>.');
+      });
+
+      fillDateSelects();
+      canvas.style.display = 'none';
+    })();
   </script>
 </body>
 </html>

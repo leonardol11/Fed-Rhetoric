@@ -1,7 +1,7 @@
 from datetime import datetime
 
 import requests
-from flask import Flask, render_template, request
+from flask import Flask, jsonify, render_template, request
 
 from analyzer import score_statement, score_shift
 from lexicon import (
@@ -13,6 +13,7 @@ from lexicon import (
 )
 from scraper import fetch_and_cache
 import groq_client
+import timeline as timeline_mod
 
 app = Flask(__name__)
 
@@ -559,6 +560,13 @@ def build_report(source):
         bands = rate_impact_bands(result["score"] if result else None)
     verdict_name, verdict_class = verdict_for_score(result["score"]) if result else (None, None)
 
+    # Released meetings for the tone-timeline graph (dates with a live URL).
+    timeline_meetings = [
+        {"date": d, "label": label_for(d), "url": u}
+        for d, u in meetings
+        if u
+    ]
+
     return render_template(
         "index.html",
         source=source,
@@ -582,7 +590,119 @@ def build_report(source):
         ran=ran,
         verdict_name=verdict_name,
         verdict_class=verdict_class,
+        timeline_meetings=timeline_meetings,
     )
+
+
+def _timeline_cfg(source):
+    if source not in SOURCE_CONFIG:
+        return None
+    return SOURCE_CONFIG[source]
+
+
+@app.route("/api/<source>/timeline")
+def api_timeline(source):
+    """Return lexicon tone scores for all released meetings in an optional range.
+
+    Query params: from=YYYY-MM-DD, to=YYYY-MM-DD. AI scores are fetched one
+    meeting at a time via /api/<source>/point so serverless timeouts stay safe.
+    """
+    cfg = _timeline_cfg(source)
+    if cfg is None:
+        return jsonify({"error": "unknown source"}), 404
+
+    date_from = request.args.get("from") or None
+    date_to = request.args.get("to") or None
+    points = timeline_mod.build_lexicon_series(
+        cfg["meetings"],
+        cfg["scraper"],
+        cfg["hawkish"],
+        cfg["dovish"],
+        date_from=date_from,
+        date_to=date_to,
+    )
+    for p in points:
+        p["label_date"] = label_for(p["date"])
+        name, css = verdict_for_score(p["score"])
+        p["verdict"] = name
+        p["css_class"] = css
+    return jsonify({"source": source, "mode": "lexicon", "points": points})
+
+
+@app.route("/api/<source>/point")
+def api_point(source):
+    """Score a single meeting for the tone timeline (lexicon or AI).
+
+    Query params:
+      date=YYYY-MM-DD (required)
+      mode=lexicon|ai (default ai)
+      force=1 to bypass AI cache and re-score
+    """
+    cfg = _timeline_cfg(source)
+    if cfg is None:
+        return jsonify({"error": "unknown source"}), 404
+
+    date = request.args.get("date")
+    if not date or date not in cfg["meetings_by_date"]:
+        return jsonify({"error": "unknown meeting date"}), 400
+
+    url = cfg["meetings_by_date"][date]
+    if not url:
+        return jsonify({"error": "statement not released", "date": date}), 400
+
+    mode = (request.args.get("mode") or "ai").lower()
+    force = request.args.get("force") == "1"
+    meeting_label = label_for(date)
+
+    if mode == "lexicon":
+        scored = timeline_mod.score_lexicon_point(
+            url, cfg["scraper"], cfg["hawkish"], cfg["dovish"]
+        )
+        if scored is None:
+            return jsonify({"error": "no statement text", "date": date}), 404
+        name, css = verdict_for_score(scored["score"])
+        return jsonify({
+            "date": date,
+            "label_date": meeting_label,
+            "url": url,
+            "verdict": name,
+            "css_class": css,
+            **scored,
+        })
+
+    # Default: AI (Groq) read, with disk cache.
+    scored = timeline_mod.score_ai_point(
+        url,
+        cfg["scraper"],
+        bank_name=cfg["bank_name"],
+        meeting_label=meeting_label,
+        meeting_noun=cfg["meeting_noun"],
+        force=force,
+    )
+    if scored is None:
+        return jsonify({"error": "no statement text", "date": date}), 404
+    if scored.get("score") is None:
+        return jsonify({
+            "date": date,
+            "label_date": meeting_label,
+            "url": url,
+            "available": False,
+            "error": scored.get("error") or "AI score unavailable",
+            "score": None,
+            "label": scored.get("label"),
+            "mode": "ai",
+            "cached": scored.get("cached", False),
+        }), 503
+
+    name = scored.get("label") or verdict_for_score(scored["score"])[0]
+    return jsonify({
+        "date": date,
+        "label_date": meeting_label,
+        "url": url,
+        "verdict": name,
+        "css_class": css_class_for_label(name),
+        **scored,
+    })
 
 
 @app.route("/")
