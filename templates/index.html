@@ -429,28 +429,27 @@
     background: var(--panel);
     border: 1px solid var(--border);
     border-top: 3px solid var(--gold);
-    padding: 18px 20px 22px;
+    padding: 20px 22px 24px;
   }
   .timeline-opts {
     font-family: var(--sans);
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 12px 14px;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 12px 12px;
     align-items: end;
-    margin-bottom: 14px;
   }
   .timeline-opts .opt {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 6px;
     min-width: 0;
   }
-  .timeline-opts .opt label,
-  .timeline-opts .check label {
+  .timeline-opts .opt label {
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.6px;
     color: var(--muted);
+    line-height: 1.2;
   }
   .timeline-opts select,
   .timeline-opts input[type="color"] {
@@ -462,29 +461,34 @@
     background: var(--paper);
     color: var(--ink);
     width: 100%;
+    height: 36px;
   }
   .timeline-opts input[type="color"] {
-    padding: 3px;
-    height: 36px;
+    padding: 4px;
     cursor: pointer;
   }
-  .timeline-opts .checks {
-    grid-column: 1 / -1;
+  .timeline-checks {
+    font-family: var(--sans);
     display: flex;
     flex-wrap: wrap;
-    gap: 14px 18px;
+    gap: 8px 20px;
     align-items: center;
-    padding-top: 2px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
   }
-  .timeline-opts .check {
+  .timeline-checks .check {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 7px;
     cursor: pointer;
     user-select: none;
+    font-size: 12px;
+    color: var(--muted);
   }
-  .timeline-opts .check input {
+  .timeline-checks .check input {
     accent-color: var(--navy);
+    margin: 0;
   }
   .timeline-actions {
     font-family: var(--sans);
@@ -492,7 +496,7 @@
     flex-wrap: wrap;
     gap: 10px;
     align-items: center;
-    margin: 4px 0 16px;
+    margin-top: 16px;
   }
   .timeline-actions .run-all-btn {
     font-family: var(--sans);
@@ -514,7 +518,7 @@
   .timeline-actions .ghost-btn {
     font-family: var(--sans);
     font-size: 12px;
-    padding: 8px 14px;
+    padding: 9px 14px;
     border-radius: 3px;
     border: 1px solid var(--border);
     background: var(--panel);
@@ -526,7 +530,8 @@
     font-size: 12px;
     color: var(--muted);
     flex: 1;
-    min-width: 140px;
+    min-width: 160px;
+    line-height: 1.4;
   }
   .timeline-status strong { color: var(--navy); }
   .timeline-status.error { color: var(--hawk); }
@@ -536,7 +541,7 @@
     background: #ebe7dc;
     border-radius: 2px;
     overflow: hidden;
-    margin-bottom: 14px;
+    margin-top: 12px;
     display: none;
   }
   .timeline-progress.visible { display: block; }
@@ -550,22 +555,27 @@
     position: relative;
     height: 340px;
     width: 100%;
+    margin-top: 18px;
+    padding-top: 4px;
+    border-top: 1px solid var(--border);
   }
+  .chart-wrap.has-data { padding-top: 16px; }
   .chart-empty {
     font-family: var(--serif);
     font-style: italic;
     font-size: 14px;
     color: var(--muted);
     text-align: center;
-    padding: 48px 12px;
+    padding: 72px 12px 48px;
   }
   @media (max-width: 700px) {
     .layout { grid-template-columns: 1fr; }
     .legend-panel { position: static; }
+    .timeline-opts { grid-template-columns: 1fr 1fr; }
     .chart-wrap { height: 280px; }
   }
   @media print {
-    form.controls, .actions, .timeline-actions, .timeline-opts { display: none; }
+    form.controls, .actions, .timeline-actions, .timeline-opts, .timeline-checks { display: none; }
     body { margin: 0; max-width: none; background: #fff; }
     .layout { grid-template-columns: 1fr 240px; }
     .card, .legend-card, .timeline-card { border: 1px solid #999; }
@@ -713,13 +723,6 @@
           </select>
         </div>
         <div class="opt">
-          <label for="tl-chart">Chart type</label>
-          <select id="tl-chart">
-            <option value="line" selected>Line</option>
-            <option value="bar">Bar</option>
-          </select>
-        </div>
-        <div class="opt">
           <label for="tl-yaxis">Y-axis</label>
           <select id="tl-yaxis">
             <option value="fixed" selected>Fixed (&minus;1 to +1)</option>
@@ -727,15 +730,16 @@
           </select>
         </div>
         <div class="opt">
-          <label for="tl-color">Line / bar color</label>
-          <input type="color" id="tl-color" value="#16233f" title="Series color">
+          <label for="tl-color">Line color</label>
+          <input type="color" id="tl-color" value="#16233f" title="Line color">
         </div>
-        <div class="checks">
-          <label class="check"><input type="checkbox" id="tl-bands" checked> Band shading</label>
-          <label class="check"><input type="checkbox" id="tl-zero" checked> Zero line</label>
-          <label class="check"><input type="checkbox" id="tl-points" checked> Meeting points</label>
-          <label class="check"><input type="checkbox" id="tl-fill"> Area fill</label>
-        </div>
+      </div>
+
+      <div class="timeline-checks">
+        <label class="check"><input type="checkbox" id="tl-bands" checked> Band shading</label>
+        <label class="check"><input type="checkbox" id="tl-zero" checked> Zero line</label>
+        <label class="check"><input type="checkbox" id="tl-points" checked> Meeting points</label>
+        <label class="check"><input type="checkbox" id="tl-fill"> Area fill</label>
       </div>
 
       <div class="timeline-actions">
@@ -746,7 +750,7 @@
       </div>
       <div class="timeline-progress" id="tl-progress"><div class="bar" id="tl-progress-bar"></div></div>
 
-      <div class="chart-wrap">
+      <div class="chart-wrap" id="tl-chart-wrap">
         <canvas id="tone-chart" aria-label="Tone score over meetings"></canvas>
         <div class="chart-empty" id="tl-empty">No series yet. Run All Meetings to generate the graph.</div>
       </div>
@@ -785,7 +789,6 @@
       var fromSel = document.getElementById('tl-from');
       var toSel = document.getElementById('tl-to');
       var modeSel = document.getElementById('tl-mode');
-      var chartSel = document.getElementById('tl-chart');
       var yAxisSel = document.getElementById('tl-yaxis');
       var colorInput = document.getElementById('tl-color');
       var bandsChk = document.getElementById('tl-bands');
@@ -799,6 +802,7 @@
       var progressEl = document.getElementById('tl-progress');
       var progressBar = document.getElementById('tl-progress-bar');
       var emptyEl = document.getElementById('tl-empty');
+      var chartWrap = document.getElementById('tl-chart-wrap');
       var canvas = document.getElementById('tone-chart');
 
       var chart = null;
@@ -886,15 +890,16 @@
           if (chart) { chart.destroy(); chart = null; }
           emptyEl.style.display = '';
           canvas.style.display = 'none';
+          chartWrap.classList.remove('has-data');
           return;
         }
         emptyEl.style.display = 'none';
         canvas.style.display = '';
+        chartWrap.classList.add('has-data');
 
         var labels = points.map(function (p) { return p.label_date || p.date; });
         var data = points.map(function (p) { return p.score; });
         var color = colorInput.value || '#16233f';
-        var type = chartSel.value;
         var fixedY = yAxisSel.value === 'fixed';
         var showPoints = pointsChk.checked;
         var fill = fillChk.checked;
@@ -903,17 +908,13 @@
           label: modeSel.value === 'ai' ? 'AI tone score' : 'Lexicon tone score',
           data: data,
           borderColor: color,
-          backgroundColor: type === 'bar'
-            ? color
-            : (fill ? hexToRgba(color, 0.12) : 'transparent'),
-          borderWidth: type === 'bar' ? 0 : 2,
-          pointRadius: type === 'line' && showPoints ? 3.5 : (type === 'line' ? 0 : undefined),
+          backgroundColor: fill ? hexToRgba(color, 0.12) : 'transparent',
+          borderWidth: 2,
+          pointRadius: showPoints ? 3.5 : 0,
           pointHoverRadius: 5,
           pointBackgroundColor: color,
-          fill: type === 'line' ? fill : false,
-          tension: 0.22,
-          barPercentage: 0.75,
-          categoryPercentage: 0.9
+          fill: fill,
+          tension: 0.22
         };
 
         var options = {
@@ -970,14 +971,9 @@
           }
         };
 
-        if (zeroChk.checked) {
-          options.plugins.annotation = undefined;
-          // Draw zero via a lightweight afterDraw when annotation plugin isn't loaded.
-        }
-
         if (chart) chart.destroy();
         chart = new Chart(canvas.getContext('2d'), {
-          type: type,
+          type: 'line',
           data: { labels: labels, datasets: [dataset] },
           options: options,
           plugins: [bandPlugin(), zeroLinePlugin()]
@@ -1022,7 +1018,7 @@
       }
 
       ['change', 'input'].forEach(function (evt) {
-        [chartSel, yAxisSel, colorInput, bandsChk, zeroChk, pointsChk, fillChk].forEach(function (el) {
+        [yAxisSel, colorInput, bandsChk, zeroChk, pointsChk, fillChk].forEach(function (el) {
           el.addEventListener(evt, applyCustomizations);
         });
       });
