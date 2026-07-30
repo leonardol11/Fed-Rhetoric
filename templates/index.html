@@ -568,6 +568,61 @@
     text-align: center;
     padding: 72px 12px 48px;
   }
+  .tl-hover {
+    display: none;
+    margin-top: 14px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--gold);
+    background: #f7f4ec;
+    text-align: left;
+  }
+  .tl-hover.visible { display: block; }
+  .tl-hover .tl-hover-top {
+    font-family: var(--sans);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    align-items: baseline;
+    margin-bottom: 2px;
+  }
+  .tl-hover .tl-hover-date {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--muted);
+  }
+  .tl-hover .tl-hover-verdict {
+    font-family: var(--serif);
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+  }
+  .tl-hover .tl-hover-verdict.hawkish { color: var(--hawk); }
+  .tl-hover .tl-hover-verdict.dovish { color: var(--dove); }
+  .tl-hover .tl-hover-verdict.neutral { color: var(--ink); }
+  .tl-hover .tl-hover-score {
+    font-family: var(--sans);
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .tl-hover .tl-hover-summary {
+    font-style: italic;
+    font-size: 14px;
+    color: var(--ink);
+    margin-top: 6px;
+    line-height: 1.4;
+  }
+  .tl-hover-hint {
+    display: none;
+    font-family: var(--sans);
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 10px;
+    text-align: center;
+    letter-spacing: 0.2px;
+  }
+  .tl-hover-hint.visible { display: block; }
   @media (max-width: 700px) {
     .layout { grid-template-columns: 1fr; }
     .legend-panel { position: static; }
@@ -575,7 +630,7 @@
     .chart-wrap { height: 280px; }
   }
   @media print {
-    form.controls, .actions, .timeline-actions, .timeline-opts, .timeline-checks { display: none; }
+    form.controls, .actions, .timeline-actions, .timeline-opts, .timeline-checks, .tl-hover-hint { display: none; }
     body { margin: 0; max-width: none; background: #fff; }
     .layout { grid-template-columns: 1fr 240px; }
     .card, .legend-card, .timeline-card { border: 1px solid #999; }
@@ -754,6 +809,15 @@
         <canvas id="tone-chart" aria-label="Tone score over meetings"></canvas>
         <div class="chart-empty" id="tl-empty">No series yet. Run All Meetings to generate the graph.</div>
       </div>
+      <div class="tl-hover-hint" id="tl-hover-hint">Hover a meeting point for details</div>
+      <div class="tl-hover" id="tl-hover" aria-live="polite">
+        <div class="tl-hover-top">
+          <span class="tl-hover-date" id="tl-hover-date"></span>
+          <span class="tl-hover-verdict" id="tl-hover-verdict"></span>
+          <span class="tl-hover-score" id="tl-hover-score"></span>
+        </div>
+        <div class="tl-hover-summary" id="tl-hover-summary"></div>
+      </div>
     </div>
   </section>
 
@@ -804,11 +868,56 @@
       var emptyEl = document.getElementById('tl-empty');
       var chartWrap = document.getElementById('tl-chart-wrap');
       var canvas = document.getElementById('tone-chart');
+      var hoverEl = document.getElementById('tl-hover');
+      var hoverHint = document.getElementById('tl-hover-hint');
+      var hoverDate = document.getElementById('tl-hover-date');
+      var hoverVerdict = document.getElementById('tl-hover-verdict');
+      var hoverScore = document.getElementById('tl-hover-score');
+      var hoverSummary = document.getElementById('tl-hover-summary');
 
       var chart = null;
       var points = [];
       var abortRun = false;
       var running = false;
+
+      function clearHover() {
+        hoverEl.classList.remove('visible');
+        hoverDate.textContent = '';
+        hoverVerdict.textContent = '';
+        hoverVerdict.className = 'tl-hover-verdict';
+        hoverScore.textContent = '';
+        hoverSummary.textContent = '';
+        hoverSummary.style.display = 'none';
+      }
+
+      function showHover(p) {
+        if (!p) { clearHover(); return; }
+        hoverDate.textContent = p.label_date || p.date || '';
+        var verdict = p.verdict || p.label || '';
+        hoverVerdict.textContent = verdict;
+        hoverVerdict.className = 'tl-hover-verdict ' + (p.css_class || '');
+        var score = (p.score !== null && p.score !== undefined)
+          ? ((p.score > 0 ? '+' : '') + Number(p.score).toFixed(2))
+          : '';
+        hoverScore.textContent = score ? ('tone score ' + score) : '';
+        if (p.summary) {
+          hoverSummary.textContent = '"' + p.summary + '"';
+          hoverSummary.style.display = '';
+        } else {
+          hoverSummary.textContent = '';
+          hoverSummary.style.display = 'none';
+        }
+        hoverEl.classList.add('visible');
+      }
+
+      function setHoverChrome(hasData) {
+        if (hasData) {
+          hoverHint.classList.add('visible');
+        } else {
+          hoverHint.classList.remove('visible');
+          clearHover();
+        }
+      }
 
       function fillDateSelects() {
         fromSel.innerHTML = '';
@@ -891,11 +1000,13 @@
           emptyEl.style.display = '';
           canvas.style.display = 'none';
           chartWrap.classList.remove('has-data');
+          setHoverChrome(false);
           return;
         }
         emptyEl.style.display = 'none';
         canvas.style.display = '';
         chartWrap.classList.add('has-data');
+        setHoverChrome(true);
 
         var labels = points.map(function (p) { return p.label_date || p.date; });
         var data = points.map(function (p) { return p.score; });
@@ -921,22 +1032,22 @@
           responsive: true,
           maintainAspectRatio: false,
           interaction: { mode: 'index', intersect: false },
+          onHover: function (evt, elements) {
+            canvas.style.cursor = elements && elements.length ? 'pointer' : 'default';
+          },
           plugins: {
             legend: { display: false },
+            // Keep the chart clear: details render in the panel under the graph.
             tooltip: {
-              backgroundColor: '#16233f',
-              titleFont: { family: 'EB Garamond', size: 14 },
-              bodyFont: { family: '-apple-system, Helvetica Neue, Arial, sans-serif', size: 12 },
-              padding: 10,
-              callbacks: {
-                afterLabel: function (ctx) {
-                  var p = points[ctx.dataIndex];
-                  if (!p) return '';
-                  var lines = [];
-                  if (p.verdict || p.label) lines.push((p.verdict || p.label));
-                  if (p.summary) lines.push(p.summary);
-                  return lines;
+              enabled: false,
+              external: function (context) {
+                var tooltip = context.tooltip;
+                if (!tooltip || tooltip.opacity === 0 || !tooltip.dataPoints || !tooltip.dataPoints.length) {
+                  clearHover();
+                  return;
                 }
+                var idx = tooltip.dataPoints[0].dataIndex;
+                showHover(points[idx]);
               }
             }
           },
