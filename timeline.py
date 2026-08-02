@@ -55,7 +55,7 @@ def released_meetings(meetings):
             yield date, url
 
 
-def score_lexicon_point(url, source, hawkish, dovish):
+def score_lexicon_point(url, source, hawkish, dovish, hawk_phrases=None, dove_phrases=None):
     """Score one statement with the lexicon. Returns None if text is empty."""
     try:
         text = fetch_and_cache(url, source=source, fresh=False)
@@ -70,7 +70,7 @@ def score_lexicon_point(url, source, hawkish, dovish):
             return None
     if not text or not text.strip():
         return None
-    result = score_statement(text, hawkish, dovish)
+    result = score_statement(text, hawkish, dovish, hawk_phrases, dove_phrases)
     return {
         "score": result["score"],
         "label": result["label"],
@@ -149,7 +149,8 @@ def score_ai_point(url, source, bank_name, meeting_label, meeting_noun, force=Fa
     return entry
 
 
-def build_lexicon_series(meetings, source, hawkish, dovish, date_from=None, date_to=None):
+def build_lexicon_series(meetings, source, hawkish, dovish, date_from=None, date_to=None,
+                         hawk_phrases=None, dove_phrases=None):
     """Score all released meetings in range with the lexicon (synchronous)."""
     points = []
     for date, url in released_meetings(meetings):
@@ -157,7 +158,7 @@ def build_lexicon_series(meetings, source, hawkish, dovish, date_from=None, date
             continue
         if date_to and date > date_to:
             continue
-        scored = score_lexicon_point(url, source, hawkish, dovish)
+        scored = score_lexicon_point(url, source, hawkish, dovish, hawk_phrases, dove_phrases)
         if scored is None:
             continue
         points.append({"date": date, "url": url, **scored})

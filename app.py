@@ -7,9 +7,9 @@ from analyzer import score_statement, score_shift
 from lexicon import (
     ECB_HAWKISH, ECB_DOVISH,
     BOE_HAWKISH, BOE_DOVISH,
-    BOJ_HAWKISH, BOJ_DOVISH,
-    BCB_HAWKISH, BCB_DOVISH,
-    BANXICO_HAWKISH, BANXICO_DOVISH,
+    BOJ_HAWKISH, BOJ_DOVISH, BOJ_HAWK_PHRASES, BOJ_DOVE_PHRASES,
+    BCB_HAWKISH, BCB_DOVISH, BCB_HAWK_PHRASES, BCB_DOVE_PHRASES,
+    BANXICO_HAWKISH, BANXICO_DOVISH, BANXICO_HAWK_PHRASES, BANXICO_DOVE_PHRASES,
 )
 from scraper import fetch_and_cache
 import groq_client
@@ -449,6 +449,8 @@ SOURCE_CONFIG = {
         "meetings_by_date": BOJ_MEETINGS_BY_DATE,
         "hawkish": BOJ_HAWKISH,
         "dovish": BOJ_DOVISH,
+        "hawk_phrases": BOJ_HAWK_PHRASES,
+        "dove_phrases": BOJ_DOVE_PHRASES,
         "bank_name": "Bank of Japan",
         "page_title": "BoJ Statement Parser",
         "masthead_title": "BANK OF JAPAN PARSER",
@@ -463,6 +465,8 @@ SOURCE_CONFIG = {
         "meetings_by_date": BCB_MEETINGS_BY_DATE,
         "hawkish": BCB_HAWKISH,
         "dovish": BCB_DOVISH,
+        "hawk_phrases": BCB_HAWK_PHRASES,
+        "dove_phrases": BCB_DOVE_PHRASES,
         "bank_name": "Banco Central do Brasil (Copom)",
         "page_title": "Copom Statement Parser",
         "masthead_title": "BANCO CENTRAL DO BRASIL PARSER",
@@ -477,6 +481,8 @@ SOURCE_CONFIG = {
         "meetings_by_date": BANXICO_MEETINGS_BY_DATE,
         "hawkish": BANXICO_HAWKISH,
         "dovish": BANXICO_DOVISH,
+        "hawk_phrases": BANXICO_HAWK_PHRASES,
+        "dove_phrases": BANXICO_DOVE_PHRASES,
         "bank_name": "Banco de México (Banxico)",
         "page_title": "Banxico Statement Parser",
         "masthead_title": "BANCO DE MÉXICO PARSER",
@@ -530,7 +536,7 @@ def build_report(source):
         prior = prior_meeting(meetings, selected_date)
         try:
             text = fetch_and_cache(statement_url, source=cfg["scraper"], fresh=True)
-            result = score_statement(text, cfg["hawkish"], cfg["dovish"])
+            result = score_statement(text, cfg["hawkish"], cfg["dovish"], cfg.get("hawk_phrases"), cfg.get("dove_phrases"))
 
             if prior:
                 prior_date, prior_url = prior
@@ -538,7 +544,7 @@ def build_report(source):
                 if prior_url:
                     try:
                         prior_text = fetch_and_cache(prior_url, source=cfg["scraper"], fresh=True)
-                        shift = score_shift(text, prior_text, cfg["hawkish"], cfg["dovish"])
+                        shift = score_shift(text, prior_text, cfg["hawkish"], cfg["dovish"], cfg.get("hawk_phrases"), cfg.get("dove_phrases"))
                         shift["prior_label_date"] = label_for(prior_date)
                         shift["prior_label"], _ = verdict_for_score(shift["prior_score"])
                     except requests.exceptions.RequestException:
@@ -633,6 +639,8 @@ def api_timeline(source):
         cfg["scraper"],
         cfg["hawkish"],
         cfg["dovish"],
+        hawk_phrases=cfg.get("hawk_phrases"),
+        dove_phrases=cfg.get("dove_phrases"),
         date_from=date_from,
         date_to=date_to,
     )
@@ -671,7 +679,7 @@ def api_point(source):
 
     if mode == "lexicon":
         scored = timeline_mod.score_lexicon_point(
-            url, cfg["scraper"], cfg["hawkish"], cfg["dovish"]
+            url, cfg["scraper"], cfg["hawkish"], cfg["dovish"], cfg.get("hawk_phrases"), cfg.get("dove_phrases")
         )
         if scored is None:
             return jsonify({"error": "no statement text", "date": date}), 404

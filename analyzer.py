@@ -13,17 +13,62 @@ def tokenize(text):
     return re.findall(r"\b[\w-]+\b", text.lower())
 
 
-def score_statement(text, hawkish=None, dovish=None):
+def _phrase_tokens(phrase):
+    return tuple(re.findall(r"\b[\w-]+\b", phrase.lower()))
+
+
+def score_statement(text, hawkish=None, dovish=None,
+                    hawk_phrases=None, dove_phrases=None):
     # Default to the Fed lexicon; callers (e.g. the ECB page) can pass their
     # own dicts to score against an institution-specific vocabulary.
+    #
+    # Phrase dicts are opt-in per source. When supplied, multi-word terms are
+    # matched first (longest phrase wins) and carry more weight than single
+    # words; their tokens are then excluded from the single-word pass so a
+    # phrase and its component words are never double counted. Sources without
+    # phrases (Fed/ECB/BoE) fall straight through to the original single-word
+    # scoring and are unaffected.
     hawkish = HAWKISH if hawkish is None else hawkish
     dovish = DOVISH if dovish is None else dovish
 
     tokens = tokenize(text)
+    n = len(tokens)
+    covered = [False] * n
     hawk, dove = 0.0, 0.0
     matched = []
 
+    phrase_items = []
+    for phrase, weight in (hawk_phrases or {}).items():
+        phrase_items.append((_phrase_tokens(phrase), weight, "hawk"))
+    for phrase, weight in (dove_phrases or {}).items():
+        phrase_items.append((_phrase_tokens(phrase), weight, "dove"))
+    # Longest phrases first so "monetary easing" wins over a bare "easing".
+    phrase_items.sort(key=lambda item: len(item[0]), reverse=True)
+
+    for ptokens, weight, side in phrase_items:
+        plen = len(ptokens)
+        if plen == 0 or plen > n:
+            continue
+        i = 0
+        while i <= n - plen:
+            if not any(covered[i:i + plen]) and tuple(tokens[i:i + plen]) == ptokens:
+                window = tokens[max(0, i - 3):i]
+                negated = any(w in NEGATORS for w in window)
+                for j in range(i, i + plen):
+                    covered[j] = True
+                # A negator flips the direction (e.g. "no additional easing").
+                if (side == "hawk") != negated:
+                    hawk += weight
+                else:
+                    dove += weight
+                matched.append((" ".join(ptokens), side, negated))
+                i += plen
+            else:
+                i += 1
+
     for i, tok in enumerate(tokens):
+        if covered[i]:
+            continue
         window = tokens[max(0, i - 3):i]
         negated = any(w in NEGATORS for w in window)
 
@@ -71,9 +116,10 @@ def score_statement(text, hawkish=None, dovish=None):
 SHIFT_THRESHOLD = 0.08
 
 
-def score_shift(current_text, prior_text, hawkish=None, dovish=None):
-    current = score_statement(current_text, hawkish, dovish)
-    prior = score_statement(prior_text, hawkish, dovish)
+def score_shift(current_text, prior_text, hawkish=None, dovish=None,
+                hawk_phrases=None, dove_phrases=None):
+    current = score_statement(current_text, hawkish, dovish, hawk_phrases, dove_phrases)
+    prior = score_statement(prior_text, hawkish, dovish, hawk_phrases, dove_phrases)
     delta = round(current["score"] - prior["score"], 3)
 
     if delta > SHIFT_THRESHOLD:
