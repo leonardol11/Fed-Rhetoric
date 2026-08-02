@@ -408,6 +408,13 @@
     margin-top: 36px;
     padding-top: 28px;
     border-top: 2px solid var(--navy);
+    /* Break out of the 900px article column so the whole tone timeline can
+       show every meeting date at once, statically, with no horizontal scroll. */
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 96vw;
+    max-width: 1500px;
   }
   .timeline-section .section-head {
     text-align: center;
@@ -553,7 +560,7 @@
     margin-top: 18px;
     padding-top: 4px;
     border-top: 1px solid var(--border);
-    overflow-x: auto;
+    overflow-x: hidden;
     overflow-y: hidden;
   }
   .chart-wrap.has-data { padding-top: 16px; }
@@ -1016,11 +1023,9 @@
         chartWrap.classList.add('has-data');
         setHoverChrome(true);
 
-        // Widen the canvas for long series so every meeting gets a point + label
-        // instead of Chart.js auto-skipping ticks to fit a narrow plot.
-        var perPoint = points.length > 40 ? 34 : (points.length > 24 ? 40 : 48);
-        var plotWidth = Math.max(chartWrap.clientWidth || 0, points.length * perPoint);
-        chartScroll.style.width = plotWidth + 'px';
+        // Static graph: the plot always fills the full (now widened) container,
+        // so every meeting date is visible at once with no horizontal scroll.
+        chartScroll.style.width = '100%';
 
         var labels = points.map(function (p) {
           return shortLabel(p.date, p.label_date || p.date);
