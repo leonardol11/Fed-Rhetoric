@@ -413,6 +413,7 @@ SOURCE_CONFIG = {
         "select_label": "FOMC Meeting",
         "meeting_noun": "FOMC Statement",
         "action": "/",
+        "landing_url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
     },
     "ecb": {
         "scraper": "ecb",
@@ -426,6 +427,7 @@ SOURCE_CONFIG = {
         "select_label": "ECB Meeting",
         "meeting_noun": "ECB Monetary Policy Decision",
         "action": "/ecb",
+        "landing_url": "https://www.ecb.europa.eu/press/govcdec/mopo/html/index.en.html",
     },
     "boe": {
         "scraper": "boe",
@@ -439,6 +441,7 @@ SOURCE_CONFIG = {
         "select_label": "BoE Meeting",
         "meeting_noun": "BoE Monetary Policy Summary",
         "action": "/boe",
+        "landing_url": "https://www.bankofengland.co.uk/monetary-policy",
     },
     "boj": {
         "scraper": "boj",
@@ -452,6 +455,7 @@ SOURCE_CONFIG = {
         "select_label": "BoJ Meeting",
         "meeting_noun": "BoJ Statement on Monetary Policy",
         "action": "/boj",
+        "landing_url": "https://www.boj.or.jp/en/mopo/mpmdeci/index.htm",
     },
     "bcb": {
         "scraper": "bcb",
@@ -465,6 +469,7 @@ SOURCE_CONFIG = {
         "select_label": "Copom Meeting",
         "meeting_noun": "Copom Statement (Portuguese source)",
         "action": "/bcb",
+        "landing_url": "https://www.bcb.gov.br/en/monetarypolicy/copomstatements",
     },
     "banxico": {
         "scraper": "banxico",
@@ -478,6 +483,7 @@ SOURCE_CONFIG = {
         "select_label": "Banxico Meeting",
         "meeting_noun": "Banxico Monetary Policy Statement",
         "action": "/banxico",
+        "landing_url": "https://www.banxico.org.mx/publications-and-press/announcements-of-monetary-policy-decisions/",
     },
 }
 
@@ -502,10 +508,15 @@ def build_report(source):
     selected_date = request.args.get("meeting", default_meeting_date(meetings))
     if selected_date not in meetings_by_date:
         selected_date = default_meeting_date(meetings)
-    url = meetings_by_date[selected_date]
+    statement_url = meetings_by_date[selected_date]
     # An empty URL marks a scheduled-but-unreleased meeting (e.g. one that hasn't
     # happened yet), which we surface explicitly rather than trying to fetch.
-    released = bool(url)
+    released = bool(statement_url)
+    # The "Statement" link always points somewhere useful: the exact statement
+    # when released, otherwise the bank's official announcements page. Future
+    # meetings on GUID-URL banks (Banxico/ECB/BCB) have no direct URL yet, so
+    # without this fallback their "Statement" link would be missing entirely.
+    link_url = statement_url or cfg["landing_url"]
 
     error = None
     unreleased = False
@@ -518,7 +529,7 @@ def build_report(source):
     elif ran:
         prior = prior_meeting(meetings, selected_date)
         try:
-            text = fetch_and_cache(url, source=cfg["scraper"], fresh=True)
+            text = fetch_and_cache(statement_url, source=cfg["scraper"], fresh=True)
             result = score_statement(text, cfg["hawkish"], cfg["dovish"])
 
             if prior:
@@ -549,7 +560,7 @@ def build_report(source):
             error = "This statement isn't published yet. Check back after the meeting concludes."
 
     dropdown = [
-        {"date": d, "label": label_for(d), "url": u, "selected": d == selected_date}
+        {"date": d, "label": label_for(d), "url": u or cfg["landing_url"], "selected": d == selected_date}
         for d, u in meetings
     ]
 
@@ -582,7 +593,7 @@ def build_report(source):
         dropdown=dropdown,
         selected_date=selected_date,
         selected_label=label_for(selected_date),
-        url=url,
+        url=link_url,
         result=result,
         shift=shift,
         grok=grok,
