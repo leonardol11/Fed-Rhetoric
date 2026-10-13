@@ -1,0 +1,290 @@
+{
+  "https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados_detalhes?nro_reuniao=244": {
+    "available": true,
+    "error": null,
+    "label": "Hawkish",
+    "model": "llama-3.3-70b-versatile",
+    "score": 0.8,
+    "summary": "The central bank raised the Selic rate to 10.75% and signaled a potential reduction in the pace of rate hikes, but emphasized its commitment to fighting inflation and anchoring expectations."
+  },
+  "https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados_detalhes?nro_reuniao=245": {
+    "available": true,
+    "error": null,
+    "label": "Hawkish",
+    "model": "llama-3.3-70b-versatile",
+    "score": 0.8,
+    "summary": "The central bank raised the Selic rate to 11.75% and indicated that the monetary tightening cycle should continue advancing significantly, signaling a hawkish tone due to high inflation concerns and the need to anchor expectations."
+  },
+  "https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados_detalhes?nro_reuniao=246": {
+    "available": true,
+    "error": null,
+    "label": "Hawkish",
+    "model": "llama-3.3-70b-versatile",
+    "score": 0.8,
+    "summary": "The central bank raised the Selic rate to 12.75% and indicated that the monetary tightening cycle will continue, citing high inflation and uncertainty, with a focus on anchoring expectations and achieving price stability."
+  },
+  "https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados_detalhes?nro_reuniao=247": {
+    "available": true,
+    "error": null,
+    "label": "Hawkish",
+    "model": "llama-3.3-70b-versatile",
+    "score": 0.8,
+    "summary": "The central bank raised the Selic rate to 13.25% and indicated that the monetary tightening cycle will continue to advance significantly, signaling a hawkish tone."
+  },
+  "https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados_detalhes?nro_reuniao=248": {
+    "available": true,
+    "error": null,
+    "label": "Hawkish",
+    "model": "llama-3.3-70b-versatile",
+    "score": 0.8,
+    "summary": "The central bank raised the Selic rate to 13.75% and indicated that the monetary tightening cycle will continue to advance significantly, reflecting high inflation and uncertainty around its scenarios and projections."
+  },
+  "https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados_detalhes?nro_reuniao=249": {
+    "available": true,
+    "error": null,
+    "label": "Hawkish",
+    "model": "llama-3.3-70b-versatile",
+    "score": 0.5,
+    "summary": "The central bank maintained the Selic rate at 13.75% and emphasized its commitment to controlling inflation, indicating a cautious and restrictive monetary policy stance."
+  },
+  "https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados_detalhes?nro_reuniao=250": {
+    "available": true,
+    "error": null,
+    "label": "Hawkish",
+    "model": "llama-3.3-70b-versatile",
+    "score": 0.5,
+    "summary": "The central bank maintained the Selic rate at 13.75% and emphasized its commitment to controlling inflation, indicating a cautious and restrictive monetary policy stance."
+  },
+  "https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados_detalhes?nro_reuniao=251": {
+    "available": true,
+    "error": null,
+    "label": "Hawkish",
+    "model": "llama-3.3-70b-versatile",
+    "score": 0.5,
+    "summary": "The central bank maintained the Selic rate at 13.75% and emphasized its commitment to controlling inflation, indicating a cautious and hawkish stance."
+  },
+  "https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados_detalhes?nro_reuniao=252": {
+    "available": true,
+    "error": null,
+    "label": "Hawkish",
+    "model": "llama-3.3-70b-versatile",
+    "score": 0.5,
+    "summary": "The central bank maintained the Selic rate at 13.75% and emphasized the need for vigilance and potential future adjustments to ensure inflation convergence to the target, indicating a cautious and restrictive monetary policy stance."
+  },
+  "https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados_detalhes?nro_reuniao=253": {
+    "available": true,
+    "error": null,
+    "label": "Hawkish",
+    "model": "llama-3.3-70b-versatile",
+    "score": 0.5,
+    "summary": "The central bank maintained its interest rate at 13.75% and emphasized the need to persevere in its strategy to ensure inflation convergence, indicating a cautious and tight monetary policy stance."
+  },
+  "https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados_detalhes?nro_reuniao=254": {
+    "available": true,
+    "error": null,
+    "label": "Hawkish",
+    "model": "llama-3.3-70b-versatile",
+    "score": 0.5,
+    "summary": "The central bank maintained the basic interest rate at 13.75% and emphasized the need for patience and serenity in monetary policy, indicating a cautious but firm stance against inflation."
+  },
+  "https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados_detalhes?nro_reuniao=255": {
+    "available": true,
+    "error": null,
+    "label": "Hawkish",
+    "model": "llama-3.3-70b-versatile",
+    "score": 0.6,
+    "summary": "The central bank maintained its interest rate at 13.75% and emphasized the need for caution and patience in conducting monetary policy to ensure inflation convergence to its target."
+  },
+  "https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados_detalhes?nro_reuniao=256": {
+    "available": true,
+    "error": null,
+    "label": "Dovish",
+    "model": "llama-3.3-70b-versatile",
+    "score": -0.5,
+    "summary": "The central bank reduced the basic interest rate by 0.50 percentage points, indicating a shift towards easier monetary policy despite acknowledging the need to maintain a contractionary stance to achieve inflation targets."
+  },
+  "https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados_detalhes?nro_reuniao=257": {
+    "available": true,
+    "error": null,
+    "label": "Dovish",
+    "model": "llama-3.3-70b-versatile",
+    "score": -0.5,
+    "summary": "The central bank reduced the basic interest rate by 0.50 percentage points, indicating a dovish tone due to the decision to ease monetary policy despite acknowledging the need for price stability and the presence of inflation risks."
+  },
+  "https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados_detalhes?nro_reuniao=258": {
+    "available": true,
+    "error": null,
+    "label": "Dovish",
+    "model": "llama-3.3-70b-versatile",
+    "score": -0.5,
+    "summary": "The central bank reduced the basic interest rate by 0.50 percentage points, indicating a dovish tone despite acknowledging the need for caution due to the uncertain international scenario and the importance of fiscal discipline."
+  },
+  "https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados_detalhes?nro_reuniao=259": {
+    "available": true,
+    "error": null,
+    "label": "Dovish",
+    "model": "llama-3.3-70b-versatile",
+    "score": -0.5,
+    "summary": "The central bank reduced the basic interest rate by 0.50 percentage points, indicating a dovish tone despite emphasizing the need for cautious monetary policy and the importance of meeting fiscal targets to anchor inflation expectations."
+  },
+  "https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados_detalhes?nro_reuniao=260": {
+    "available": true,
+    "error": null,
+    "label": "Dovish",
+    "model": "llama-3.3-70b-versatile",
+    "score": -0.5,
+    "summary": "The central bank reduced the basic interest rate by 0.50 percentage points, indicating a dovish tone due to the decision to ease monetary policy despite acknowledging the need for caution and the importance of price stability."
+  },
+  "https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados_detalhes?nro_reuniao=261": {
+    "available": true,
+    "error": null,
+    "label": "Dovish",
+    "model": "llama-3.3-70b-versatile",
+    "score": -0.5,
+    "summary": "The Central Bank of Brazil reduced the basic interest rate by 0.50 percentage points to 10.75% per annum, indicating a dovish tone due to the decision to ease monetary policy despite acknowledging the need for caution and the importance of controlling inflation."
+  },
+  "https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados_detalhes?nro_reuniao=262": {
+    "available": true,
+    "error": null,
+    "label": "Dovish",
+    "model": "llama-3.3-70b-versatile",
+    "score": -0.5,
+    "summary": "The central bank reduced the basic interest rate by 0.25 percentage points, indicating a dovish tone despite acknowledging the need for caution due to uncertain domestic and international conditions."
+  },
+  "https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados_detalhes?nro_reuniao=263": {
+    "available": true,
+    "error": null,
+    "label": "Hawkish",
+    "model": "llama-3.3-70b-versatile",
+    "score": 0.6,
+    "summary": "The central bank maintained the basic interest rate at 10.50% and signaled a cautious stance due to global uncertainty, domestic inflation risks, and the need to anchor inflation expectations."
+  },
+  "https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados_detalhes?nro_reuniao=264": {
+    "available": true,
+    "error": null,
+    "label": "Hawkish",
+    "model": "llama-3.3-70b-versatile",
+    "score": 0.5,
+    "summary": "The central bank maintained the interest rate at 10.50% and emphasized the need for caution and vigilance in monetary policy due to inflation risks and global uncertainty."
+  },
+  "https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados_detalhes?nro_reuniao=265": {
+    "available": true,
+    "error": null,
+    "label": "Hawkish",
+    "model": "llama-3.3-70b-versatile",
+    "score": 0.8,
+    "summary": "The central bank raised interest rates and indicated a more contractionary monetary policy stance due to elevated inflation expectations and a positive output gap, suggesting further rate hikes may be necessary to achieve inflation targets."
+  },
+  "https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados_detalhes?nro_reuniao=266": {
+    "available": true,
+    "error": null,
+    "label": "Hawkish",
+    "model": "llama-3.3-70b-versatile",
+    "score": 0.8,
+    "summary": "The central bank raised interest rates by 0.5 percentage points to 11.25% due to high inflation and strong economic activity, indicating a hawkish tone."
+  },
+  "https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados_detalhes?nro_reuniao=267": {
+    "available": true,
+    "error": null,
+    "label": "Hawkish",
+    "model": "llama-3.3-70b-versatile",
+    "score": 0.8,
+    "summary": "The central bank raised interest rates by 1 percentage point to combat inflation, which is above target, and signaled further rate hikes in the next two meetings to ensure price stability."
+  },
+  "https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados_detalhes?nro_reuniao=268": {
+    "available": true,
+    "error": null,
+    "label": "Hawkish",
+    "model": "llama-3.3-70b-versatile",
+    "score": 0.8,
+    "summary": "The central bank raised the basic interest rate by 1 percentage point to 13.25% and signaled a potential further increase in the next meeting, indicating a hawkish stance to combat inflation."
+  },
+  "https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados_detalhes?nro_reuniao=269": {
+    "available": true,
+    "error": null,
+    "label": "Hawkish",
+    "model": "llama-3.3-70b-versatile",
+    "score": 0.8,
+    "summary": "The central bank raised the basic interest rate by 1 percentage point to 14.25% and signaled a potential for further tightening due to high inflation and inflation expectations."
+  },
+  "https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados_detalhes?nro_reuniao=270": {
+    "available": true,
+    "error": null,
+    "label": "Hawkish",
+    "model": "llama-3.3-70b-versatile",
+    "score": 0.8,
+    "summary": "The central bank raised the basic interest rate by 0.50 percentage points to 14.75% and indicated that further tightening may be necessary to bring inflation down to the target."
+  },
+  "https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados_detalhes?nro_reuniao=271": {
+    "available": true,
+    "error": null,
+    "label": "Hawkish",
+    "model": "llama-3.3-70b-versatile",
+    "score": 0.6,
+    "summary": "The central bank raised interest rates and indicated a willingness to continue tightening policy to combat above-target inflation and anchor expectations."
+  },
+  "https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados_detalhes?nro_reuniao=272": {
+    "available": true,
+    "error": null,
+    "label": "Hawkish",
+    "model": "llama-3.3-70b-versatile",
+    "score": 0.6,
+    "summary": "The central bank maintained a high interest rate and emphasized the need for caution and a significantly contractionary monetary policy to ensure inflation convergence to the target, indicating a hawkish tone."
+  },
+  "https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados_detalhes?nro_reuniao=273": {
+    "available": true,
+    "error": null,
+    "label": "Hawkish",
+    "model": "llama-3.3-70b-versatile",
+    "score": 0.6,
+    "summary": "The central bank maintained its interest rate at 15% and emphasized the need for a significantly contractionary monetary policy to ensure inflation convergence to the target, indicating a cautious and hawkish stance."
+  },
+  "https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados_detalhes?nro_reuniao=274": {
+    "available": true,
+    "error": null,
+    "label": "Hawkish",
+    "model": "llama-3.3-70b-versatile",
+    "score": 0.6,
+    "summary": "The central bank maintained a high interest rate of 15% and signaled a prolonged period of contractionary monetary policy to ensure inflation convergence to the target, indicating a cautious and hawkish stance."
+  },
+  "https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados_detalhes?nro_reuniao=275": {
+    "available": true,
+    "error": null,
+    "label": "Hawkish",
+    "model": "llama-3.3-70b-versatile",
+    "score": 0.6,
+    "summary": "The central bank maintained its interest rate at 15% and emphasized the need for a significantly contractionary monetary policy for a prolonged period to ensure inflation convergence to the target, indicating a cautious and hawkish stance."
+  },
+  "https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados_detalhes?nro_reuniao=276": {
+    "available": true,
+    "error": null,
+    "label": "Hawkish",
+    "model": "llama-3.3-70b-versatile",
+    "score": 0.5,
+    "summary": "The central bank maintained its interest rate at 15% and signaled a cautious approach to monetary policy, with a potential for easing in the future, but only if inflation converges to the target."
+  },
+  "https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados_detalhes?nro_reuniao=277": {
+    "available": true,
+    "error": null,
+    "label": "Dovish",
+    "model": "llama-3.3-70b-versatile",
+    "score": -0.5,
+    "summary": "The central bank reduced the basic interest rate to 14.75% and signaled a cautious approach to future adjustments, indicating a slightly dovish tone despite high inflation expectations."
+  },
+  "https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados_detalhes?nro_reuniao=278": {
+    "available": true,
+    "error": null,
+    "label": "Dovish",
+    "model": "llama-3.3-70b-versatile",
+    "score": -0.5,
+    "summary": "The central bank reduced the basic interest rate to 14.50% and signaled a cautious approach to monetary policy, prioritizing inflation convergence to the target while considering the high uncertainty and risks in the current economic scenario."
+  },
+  "https://www.bcb.gov.br/api/servico/sitebcb/copom/comunicados_detalhes?nro_reuniao=279": {
+    "available": true,
+    "error": null,
+    "label": "Dovish",
+    "model": "llama-3.3-70b-versatile",
+    "score": -0.5,
+    "summary": "The central bank reduced the basic interest rate to 14.25% amidst high uncertainty, signaling a cautious and serene approach to monetary policy while prioritizing price stability and full employment."
+  }
+}

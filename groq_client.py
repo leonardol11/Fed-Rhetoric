@@ -13,7 +13,7 @@ instead of breaking.
 
 Configuration (environment variables):
     GROQ_API_KEY  - required; your Groq API key (from https://console.groq.com)
-    GROQ_MODEL    - optional; defaults to "llama-3.3-70b-versatile"
+    GROQ_MODEL    - optional; defaults to "openai/gpt-oss-120b"
 """
 import json
 import os
@@ -22,7 +22,7 @@ from pathlib import Path
 import requests
 
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
-DEFAULT_MODEL = "llama-3.3-70b-versatile"
+DEFAULT_MODEL = "openai/gpt-oss-120b"
 
 
 def _load_local_env():
